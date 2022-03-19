@@ -13,3 +13,5 @@ add_executable(Lexer
 target_include_directories(Lexer PRIVATE
     src/
 )
+
+target_compile_options(Lexer PUBLIC -Wall -Wextra -Wpedantic)
