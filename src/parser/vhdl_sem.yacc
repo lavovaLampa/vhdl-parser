@@ -112,6 +112,7 @@
 %token DECIMAL_LITERAL
 %token EXTENDED_IDENTIFIER
 %token STRING_LITERAL
+%token OPERATOR_SYMBOL
 
 %start design_file
 
@@ -121,61 +122,6 @@
 %define parse.error detailed
 
 %%
-signal_name:
-    // SEMANTIC: "name" must be a signal name
-    name
-  ;
-
-variable_name:
-    // SEMANTIC: "name" must be a VARIABLE name
-    name
-  ;
-
-file_name:
-    // SEMANTIC: "name" must be a FILE name
-    name
-  ;
-
-function_name:
-    // SEMANTIC: "name" must be a FUNCTION name
-    name
-  ;
-
-architecture_name:
-    // SEMANTIC: "name" must be an ARCHITECTURE name
-    name
-  ;
-
-block_statement_label:
-    // SEMANTIC: "label" must be a BLOCK statement label
-    label
-  ;
-
-generate_statement_label:
-    // SEMANTIC: "label" must be a GENERATE statement label
-    label
-  ;
-
-generic_name:
-    // SEMANTIC: "name" must be a GENERIC name
-    name
-  ;
-
-port_name:
-    // SEMANTIC: "name" must be a PORT name
-    name
-  ;
-
-parameter_name:
-    // SEMANTIC: "name" must be a PARAMETER name
-    name
-  ;
-
-procedure_name:
-    // SEMANTIC: "name" must be a PROCEDURE name
-    name
-  ;
-
 abstract_literal:
     DECIMAL_LITERAL
   | BASED_LITERAL
@@ -187,16 +133,20 @@ access_type_definition:
 
 actual_designator:
     expression
-  | signal_name
-  | variable_name
-  | file_name
+  /**
+   *  Name must be:
+   *    - variable_name
+   *    - signal_name
+   *    - file_name
+  **/
+  | name
   | OPEN
   ;
 
 actual_part:
     actual_designator
-  | function_name '(' actual_designator ')'
-  | type_mark '(' actual_designator ')'
+    // SEMANTIC: Name must be a function_name or a type_mark
+  | name '(' actual_designator ')'
   ;
 
 adding_operator:
@@ -206,8 +156,12 @@ adding_operator:
   ;
 
 aggregate:
-    '(' element_association ')'
-  | '(' aggregate ',' element_association ')'
+    '(' aggregate.element_association_mul ')'
+  ;
+
+aggregate.element_association_mul:
+    element_association
+  | aggregate.element_association_mul ',' element_association
   ;
 
 alias_declaration:
@@ -227,7 +181,7 @@ alias_declaration.opt_signature:
 alias_designator:
     identifier
   | CHARACTER_LITERAL
-  | operator_symbol
+  | OPERATOR_SYMBOL
   ;
 
 allocator:
@@ -281,7 +235,7 @@ assertion.severity_opt:
   ;
 
 assertion_statement:
-    assertion ';'
+    label_colon_opt assertion ';'
   ;
 
 association_element:
@@ -318,23 +272,13 @@ attribute_specification:
 
 binding_indication:
     binding_indication.entity_aspect_opt
-    binding_indication.generic_map_aspect_opt
-    binding_indication.port_map_aspect_opt
+    generic_map_aspect_opt
+    port_map_aspect_opt
   ;
 
 binding_indication.entity_aspect_opt:
     %empty
   | USE entity_aspect
-  ;
-
-binding_indication.generic_map_aspect_opt:
-    %empty
-  | generic_map_aspect
-  ;
-
-binding_indication.port_map_aspect_opt:
-    %empty
-  | port_map_aspect
   ;
 
 block_configuration:
@@ -380,36 +324,39 @@ block_declarative_part:
   ;
 
 block_header:
-    block_header.generic_clause_opt
-    block_header.port_clause_opt
-  ;
-
-block_header.generic_clause_opt:
     %empty
-  | generic_clause block_header.generic_clause_opt.generic_map_aspect_opt
+  | block_header.generic_clause
+  | block_header.port_clause
+  | block_header.generic_clause block_header.port_clause
   ;
 
-block_header.generic_clause_opt.generic_map_aspect_opt:
-    %empty
-  | generic_map_aspect ';'
+block_header.generic_clause:
+    generic_clause
+  | generic_clause generic_map_aspect ';'
   ;
 
-block_header.port_clause_opt:
-    %empty
-  | port_clause block_header.port_clause_opt.port_map_aspect_opt
+block_header.port_clause:
+    port_clause
+  | port_clause port_map_aspect ';'
   ;
 
-block_header.port_clause_opt.port_map_aspect_opt:
-    %empty
-  | port_map_aspect ';'
-  ;
-
-block_specification:
+/* block_specification:
     architecture_name
   | block_statement_label
   | generate_statement_label
   // TODO: Replace with another rule?
   | generate_statement_label '(' index_specification ')'
+  ; */
+
+block_specification:
+    /* Name must be:
+        - architecture_name
+        - block_statement_label
+        - generate_statement_label
+    */
+    name
+    // Label must be a generate_statement_label
+  | label '(' index_specification ')'
   ;
 
 block_statement:
@@ -441,11 +388,12 @@ bus_opt:
   ;
 
 case_statement:
-    CASE expression IS
-      case_statement.case_statement_alternative_mul
-    // SEMANTIC: "label_opt" must be a CASE label
-    // SEMANTIC: "label_opt" == "label_colon_opt"
-    END CASE label_opt ';'
+    label_colon_opt
+      CASE expression IS
+        case_statement.case_statement_alternative_mul
+      // SEMANTIC: "label_opt" must be a CASE label
+      // SEMANTIC: "label_opt" == "label_colon_opt"
+      END CASE label_opt ';'
   ;
 
 case_statement.case_statement_alternative_mul:
@@ -513,18 +461,8 @@ component_declaration.local_port_clause_opt:
 component_instantiation_statement:
     label ':'
       instantiated_unit
-        component_instantiation_statement.generic_map_aspect_opt
-        component_instantiation_statement.port_map_aspect_opt ';'
-  ;
-
-component_instantiation_statement.generic_map_aspect_opt:
-    %empty
-  | generic_map_aspect
-  ;
-
-component_instantiation_statement.port_map_aspect_opt:
-    %empty
-  | port_map_aspect
+        generic_map_aspect_opt
+        port_map_aspect_opt ';'
   ;
 
 component_specification:
@@ -683,7 +621,7 @@ design_unit:
 
 designator:
     identifier
-  | operator_symbol
+  | OPERATOR_SYMBOL
   ;
 
 designator_opt:
@@ -731,21 +669,21 @@ entity_aspect:
   ;
 
 entity_class:
-    ENTITY
-  | PROCEDURE
-  | TYPE
-  | SIGNAL
-  | LABEL    
-  | ARCHITECTURE
-  | FUNCTION
-  | SUBTYPE
-  | VARIABLE
-  | LITERAL
-  | CONFIGURATION
-  | PACKAGE
-  | CONSTANT
+    ARCHITECTURE
   | COMPONENT
+  | CONFIGURATION
+  | CONSTANT
+  | ENTITY
+  | FUNCTION
+  | LABEL    
+  | LITERAL
+  | PACKAGE
+  | PROCEDURE
+  | SIGNAL
+  | SUBTYPE
+  | TYPE
   | UNITS
+  | VARIABLE
   ;
 
 entity_class_entry:
@@ -851,7 +789,7 @@ entity_statement_part:
 entity_tag:
     simple_name
   | CHARACTER_LITERAL
-  | operator_symbol
+  | OPERATOR_SYMBOL
   ;
 
 enumeration_literal:
@@ -870,7 +808,7 @@ enumeration_type_definition.inner:
 
 exit_statement:
     // SEMANTIC: "label_opt" must be a LOOP label
-    EXIT label_opt exit_statement.when_condition_opt ';'
+    label_colon_opt EXIT label_opt exit_statement.when_condition_opt ';'
   ;
 
 exit_statement.when_condition_opt:
@@ -888,17 +826,13 @@ simple_prefix:
   ;
 
 expression:
-    relation expression.logical_expression
-  ;
-
-expression.logical_expression:
-    %empty
-  | expression.and_relation_mul
-  | expression.or_relation_mul
-  | expression.xor_relation_mul
-  | NAND relation
-  | NOR relation
-  | expression.xnor_relation_mul
+    relation
+  | relation expression.and_relation_mul
+  | relation expression.or_relation_mul
+  | relation expression.xor_relation_mul
+  | relation NAND relation
+  | relation NOR relation
+  | relation expression.xnor_relation_mul
   ;
 
 expression.and_relation_mul:
@@ -953,9 +887,13 @@ file_type_definition:
   ;
 
 formal_designator:
-    generic_name
-  | port_name
-  | parameter_name    
+    /**
+     *  Name must be:
+     *    - generic_name
+     *    - port_name
+     *    - parameter_name
+    **/
+    name
   ;
 
 formal_parameter_list:
@@ -965,8 +903,8 @@ formal_parameter_list:
 
 formal_part:
     formal_designator
-  | function_name '(' formal_designator ')'
-  | type_mark '(' formal_designator ')'
+    // Name must be function_name or a type_mark
+  | name '(' formal_designator ')'
   ;
 
 full_type_declaration:
@@ -974,9 +912,11 @@ full_type_declaration:
   ;
 
 function_call:
-    function_name
+    // SEMANTIC: "name" must be a function_name
+    name
     // SEMANTIC: "association_list" is a PARAMETER association list
-  | function_name '(' association_list ')'
+    // SEMANTIC: "name" must be a function name
+  | name '(' association_list ')'
   ;
 
 generate_statement:
@@ -1011,29 +951,17 @@ generation_scheme:
   ;
 
 generic_clause:
-    GENERIC '(' generic_list ')' ';'
-  ;
-
-generic_interface_declaration:
-    interface_constant_declaration
-  ;
-
-generic_interface_element:
-    generic_interface_declaration
-  ;
-
-generic_interface_list:
-    generic_interface_element
-  | generic_interface_list ';' generic_interface_element
-  ;
-
-generic_list:
-    generic_interface_list
+    GENERIC '(' interface_constant_declaration_list ')' ';'
   ;
 
 generic_map_aspect:
     // SEMANTIC: "association_list" is a GENERIC association list
     GENERIC MAP '(' association_list ')'
+  ;
+
+generic_map_aspect_opt:
+    %empty
+  | generic_map_aspect
   ;
 
 group_constituent:
@@ -1071,13 +999,14 @@ identifier_list:
   ;
 
 if_statement:
-    IF condition THEN
-      sequence_of_statements
-    if_statement.elsif_condition_mopt
-    if_statement.else_opt
-    // SEMANTIC: "label_opt" must be an IF STATEMENT label
-    // SEMANTIC: "label_opt" == "label_colon_opt"
-    END IF label_opt ';'
+    label_colon_opt
+      IF condition THEN
+        sequence_of_statements
+      if_statement.elsif_condition_mopt
+      if_statement.else_opt
+      // SEMANTIC: "label_opt" must be an IF STATEMENT label
+      // SEMANTIC: "label_opt" == "label_colon_opt"
+      END IF label_opt ';'
   ;
 
 if_statement.elsif_condition_mopt:
@@ -1095,12 +1024,12 @@ incomplete_type_declaration:
   ;
 
 index_constraint:
-    '(' discrete_range index_constraint.discrete_range_mopt ')'
+    '(' index_constraint.discrete_range_mul ')'
   ;
 
-index_constraint.discrete_range_mopt:
-    %empty
-  | index_constraint.discrete_range_mopt ',' discrete_range
+index_constraint.discrete_range_mul:
+    discrete_range
+  | index_constraint.discrete_range_mul ',' discrete_range
   ;
 
 index_specification:
@@ -1166,6 +1095,11 @@ interface_constant_declaration:
         init_expression_opt
   ;
 
+interface_constant_declaration_list:
+    interface_constant_declaration
+  | interface_constant_declaration_list ';' interface_constant_declaration
+  ;
+
 interface_constant_declaration.in_opt:
     %empty
   | IN
@@ -1197,7 +1131,7 @@ interface_signal_declaration:
     SIGNAL identifier_list ':' mode_opt subtype_indication bus_opt init_expression_opt
   ;
 
-// SEMANTIC: Can be signal/constant/variable, must be decode from context?
+// SEMANTIC: Can be signal/constant/variable, must be decoded from context?
 // TODO: Is this correct?
 interface_unresolved_declaration:
     identifier_list ':' mode_opt subtype_indication bus_opt init_expression_opt
@@ -1255,11 +1189,12 @@ logical_name_list:
   ;
 
 loop_statement:
-    loop_statement.iteration_scheme_opt LOOP
-      sequence_of_statements
-    // SEMANTIC: "label_opt" must be a LOOP label
-    // SEMANTIC: "label_opt" == "label_colon_opt"
-    END LOOP label_opt ';'
+    label_colon_opt
+      loop_statement.iteration_scheme_opt LOOP
+        sequence_of_statements
+      // SEMANTIC: "label_opt" must be a LOOP label
+      // SEMANTIC: "label_opt" == "label_colon_opt"
+      END LOOP label_opt ';'
   ;
 
 loop_statement.iteration_scheme_opt:
@@ -1290,7 +1225,7 @@ multiplying_operator:
 name:
     attribute_name
   | indexed_name
-  | operator_symbol
+  | OPERATOR_SYMBOL
   | selected_name
   | simple_name
   | slice_name
@@ -1298,7 +1233,7 @@ name:
 
 next_statement:
     // SEMANTIC: label_opt must be an enclosing LOOP label
-    NEXT label_opt next_statement.when_opt ';'
+    label_colon_opt NEXT label_opt next_statement.when_opt ';'
   ;
 
 next_statement.when_opt:
@@ -1307,16 +1242,12 @@ next_statement.when_opt:
   ;
 
 null_statement:
-    ID_NULL ';'
+    label_colon_opt ID_NULL ';'
   ;
 
 numeric_literal:
     abstract_literal
   | physical_literal
-  ;
-
-operator_symbol:
-    STRING_LITERAL
   ;
 
 options:
@@ -1453,6 +1384,11 @@ port_map_aspect:
     PORT MAP '(' association_list ')'
   ;
 
+port_map_aspect_opt:
+    %empty
+  | port_map_aspect
+  ;
+
 prefix:
     name
   | function_call
@@ -1480,29 +1416,31 @@ primary_unit_declaration:
   ;
 
 procedure_call:
-    procedure_name
+    // SEMANTIC: "name" must be a procedure name
+    name
     // SEMANTIC: "association_list" is a PARAMETER association list
-  | procedure_name '(' association_list ')'
+    // SEMANTIC: "name" must be a procedure name
+  | name '(' association_list ')'
   ;
 
 procedure_call_statement:
-    procedure_call ';'
+    label_colon_opt procedure_call ';'
   ;
 
 process_declarative_item:
-    subprogram_declaration
-  | subprogram_body
-  | type_declaration
-  | subtype_declaration
-  | constant_declaration
-  | variable_declaration
-  | file_declaration
-  | alias_declaration
+    alias_declaration
   | attribute_declaration
   | attribute_specification
-  | use_clause
-  | group_template_declaration
+  | constant_declaration
+  | file_declaration
   | group_declaration
+  | group_template_declaration
+  | subprogram_body
+  | subprogram_declaration
+  | subtype_declaration
+  | type_declaration
+  | use_clause
+  | variable_declaration
   ;
 
 process_declarative_part:
@@ -1544,19 +1482,19 @@ protected_type_body:
   ;
 
 protected_type_body_declarative_item:
-    subprogram_declaration
-  | subprogram_body
-  | type_declaration
-  | subtype_declaration
-  | constant_declaration
-  | variable_declaration
-  | file_declaration
-  | alias_declaration
+    alias_declaration
   | attribute_declaration
   | attribute_specification
-  | use_clause
-  | group_template_declaration
+  | constant_declaration
+  | file_declaration
   | group_declaration
+  | group_template_declaration
+  | subprogram_body
+  | subprogram_declaration
+  | subtype_declaration
+  | type_declaration
+  | use_clause
+  | variable_declaration
   ;
 
 protected_type_body_declarative_part:
@@ -1631,14 +1569,14 @@ relational_operator:
   ;
 
 report_statement:
-    REPORT expression ';'
-  | REPORT expression
+    label_colon_opt REPORT expression ';'
+  | label_colon_opt REPORT expression
       SEVERITY expression ';'
   ;
 
 return_statement:
-    RETURN ';'
-  | RETURN expression ';'
+    label_colon_opt RETURN ';'
+  | label_colon_opt RETURN expression ';'
   ;
 
 scalar_type_definition:
@@ -1689,11 +1627,6 @@ sequence_of_statements:
   ;
 
 sequential_statement:
-    // There can be an optional label before each sequential statement
-    label_colon_opt sequential_statement_wo_label
-  ;
-
-sequential_statement_wo_label:
     wait_statement
   | assertion_statement
   | report_statement
@@ -1729,7 +1662,7 @@ sign:
   ;
 
 signal_assignment_statement:
-    target "<=" signal_assignment_statement.delay_mechanism_opt waveform ';'
+    label_colon_opt target "<=" signal_assignment_statement.delay_mechanism_opt waveform ';'
   ;
 
 signal_assignment_statement.delay_mechanism_opt:
@@ -1880,7 +1813,7 @@ resolution_function_name_opt:
 suffix:
     simple_name
   | CHARACTER_LITERAL
-  | operator_symbol
+  | OPERATOR_SYMBOL
   | ALL
   ;
 
@@ -1945,7 +1878,7 @@ value_expression:
   ;
 
 variable_assignment_statement:
-    target ":=" expression ';'
+    label_colon_opt target ":=" expression ';'
   ;
 
 variable_declaration:
@@ -1962,7 +1895,7 @@ shared_variable_declaration:
   ;
 
 wait_statement:
-    WAIT wait_statement.sensitivity_clause_opt wait_statement.condition_clause_opt wait_statement.timeout_clause_opt ';'
+    label_colon_opt WAIT wait_statement.sensitivity_clause_opt wait_statement.condition_clause_opt wait_statement.timeout_clause_opt ';'
   ;
 
 wait_statement.sensitivity_clause_opt:
