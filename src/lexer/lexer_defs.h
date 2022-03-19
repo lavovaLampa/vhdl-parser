@@ -1,39 +1,44 @@
 #ifndef LEXER_DATA
 #define LEXER_DATA
 
+#include <cuchar>
 #include <iostream>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <variant>
 
 namespace Lexer {
 
 enum class DelimiterKind {
     // Compound delimiters (2 characters)
-    ARROW,
-    BOX,
-    DOUBLE_STAR,
-    GT_OR_EQUAL,
-    INEQUALITY,
-    LT_OR_EQUAL,
-    VAR_ASSIGNMENT,
+    arrow,
+    box,
+    double_star,
+    gt_or_equal,
+    inequality,
+    lt_or_equal,
+    var_assignment,
 
     // Simple delimiters (1 character)
-    AMPERSAND,
-    APOSTROPHE,
-    ASTERISK,
-    COLON,
-    COMMA,
-    DOT,
-    EQUALS_SIGN,
-    GREATER_THAN_SIGN,
-    HYPHEN,
-    LEFT_PAREN,
-    LEFT_SQUARE_BRACKET,
-    LESS_THAN_SIGN,
-    PLUS_SIGN,
-    RIGHT_PAREN,
-    RIGHT_SQUARE_BRACKET,
-    SEMICOLON,
-    SLASH,
-    VERTICAL_LINE
+    ampersand,
+    apostrophe,
+    asterisk,
+    colon,
+    comma,
+    dot,
+    equals_sign,
+    greater_than_sign,
+    hyphen,
+    left_paren,
+    left_square_bracket,
+    less_than_sign,
+    plus_sign,
+    right_paren,
+    right_square_bracket,
+    semicolon,
+    slash,
+    vertical_line
 };
 
 // clang-format off
@@ -61,6 +66,37 @@ enum class ReservedWordKind {
 };
 // clang-format on
 
+enum class OpSymbol {
+    op_and,
+    op_or,
+    nand,
+    nor,
+    op_xor,
+    xnor,
+    eq,
+    neq,
+    lt,
+    lte,
+    gt,
+    gte,
+    sll,
+    srl,
+    sla,
+    sra,
+    rol,
+    ror,
+    plus,
+    minus,
+    ampersand,
+    mul,
+    div,
+    mod,
+    rem,
+    exp,
+    abs,
+    op_not
+};
+
 enum class BitStringBase {
     BINARY,
     OCTAL,
@@ -87,6 +123,7 @@ struct CharacterLiteral : Lexeme {
 
 struct StringLiteral : Lexeme {
     std::string val;
+    std::optional<OpSymbol> operator_symbol;
 };
 
 struct BasicIdentifier : Lexeme {
@@ -132,6 +169,7 @@ using Token = std::variant<
 
 std::ostream& operator<<(std::ostream& out, const DelimiterKind& kind);
 std::ostream& operator<<(std::ostream& out, const ReservedWordKind& kind);
+std::ostream& operator<<(std::ostream& out, const OpSymbol& op);
 std::ostream& operator<<(std::ostream& out, const Comment& comment);
 std::ostream& operator<<(std::ostream& out, const BitStringLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const CharacterLiteral& lit);
