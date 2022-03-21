@@ -12,7 +12,10 @@ entity fjel is
 end entity fjel;
 
 architecture rtl of fjel is
+    procedure "+"(omegalul : string) is
+    begin
 
+    end procedure "+";
 begin
     omegafasf: process(clk)
     begin
