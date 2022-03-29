@@ -147,7 +147,6 @@
 %nterm <Aggregate>                                          aggregate.element_association_mul
 %nterm <AliasDeclaration>                                   alias_declaration
 %nterm <std::optional<std::unique_ptr<SubtypeIndication>>>  alias_declaration.opt_subtype
-%nterm <std::optional<std::unique_ptr<Signature>>>          alias_declaration.opt_signature
 %nterm <AliasDesignator>                                    alias_designator
 %nterm <Allocator>                                          allocator
 %nterm <ArchitectureBody>                                   architecture_body
@@ -195,7 +194,6 @@
 %nterm <ComponentSpecification>                             component_specification
 %nterm <CompositeTypeDefinition>                            composite_type_definition
 %nterm <ConcurrentAssertion>                                concurrent_assertion_statement
-%nterm <std::optional<lexer::ReservedWord>>                 label_colon_opt
 %nterm <bool>                                               postponed_opt
 %nterm <ConcurrentSignalAssignment>                         concurrent_procedure_call_statement
 %nterm <ConcurrentSelectedSignalAssignment>                 concurrent_signal_assignment_statement
@@ -309,6 +307,7 @@
 %nterm <InterfaceVariableDeclaration>                       interface_variable_declaration
 %nterm <IterationScheme>                                    iteration_scheme
 %nterm <Identifier>                                         label
+%nterm <std::optional<Identifier>>                          label_colon_opt
 %nterm <std::optional<Identifier>>                          label_opt
 %nterm <std::vector<Identifier>>                            library_clause
 %nterm <LibraryUnit>                                        library_unit
@@ -338,7 +337,7 @@
 %nterm <PhysicalLiteral>                                    physical_literal
 %nterm <PhysicalTypeDefinition>                             physical_type_definition
 %nterm <std::vector<SecondaryUnitDeclaration>>              physical_type_definition.secondary_unit_declaration_mopt
-%nterm <std::vector<InterfaceSignalDeclaration>>            port_clause
+%nterm <PortClause>                                         port_clause
 %nterm <InterfaceSignalDeclaration>                         port_interface_declaration
 %nterm <InterfaceSignalDeclaration>                         port_interface_element
 %nterm <std::vector<InterfaceSignalDeclaration>>            port_interface_list
@@ -488,17 +487,12 @@ aggregate.element_association_mul:
 
 alias_declaration:
     ALIAS alias_designator alias_declaration.opt_subtype        
-      IS name alias_declaration.opt_signature                   { $$ = AliasDeclaration { $2, $3, $5, $6 }; }
+      IS name signature                                     { $$ = AliasDeclaration { $2, $3, $5, $6 }; }
   ;
 
 alias_declaration.opt_subtype:
     %empty                  { $$ = std::nullopt; }
   | ':' subtype_indication  { $$ = $2; }
-  ;
-
-alias_declaration.opt_signature:
-    %empty        { $$ = std::nullopt; }
-  | signature
   ;
 
 alias_designator:
@@ -1775,7 +1769,7 @@ physical_type_definition.secondary_unit_declaration_mopt:
   ;
 
 port_clause:
-    PORT '(' port_list ')' ';'    { $$ = $3; }
+    PORT '(' port_list ')' ';'    { $$ = PortClause { $3 }; }
   ;
 
 port_interface_declaration:

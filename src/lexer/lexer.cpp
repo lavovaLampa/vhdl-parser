@@ -1,9 +1,11 @@
+#include <algorithm>
 #include <cstdint>
 #include <cuchar>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <ranges>
 #include <variant>
 
 #include "lexer.h"
@@ -134,6 +136,13 @@ static StringLiteral parse_string_literal(size_t offset, std::string_view view)
     return result;
 }
 
+static inline void filter_underscores(std::string& str)
+{
+    auto fn { [](char cr) { return cr != '_'; } };
+
+    std::copy_if(str.cbegin(), str.cend(), str.begin(), fn);
+}
+
 std::optional<Token> lex(LexerState& state)
 {
     const char* const base { state.base };
@@ -146,6 +155,10 @@ std::optional<Token> lex(LexerState& state)
     for (;;) {
         const char* const begin_cursor { state.cursor };
         const size_t begin_offset { static_cast<size_t>(state.cursor - state.base) };
+        const auto reserved_fn { [&](ReservedWordKind kind) {
+            return ReservedWord { { begin_offset, std::string_view { begin_cursor, static_cast<size_t>(cursor - begin_cursor) } },
+                kind };
+        } };
 
         /*!re2c
             re2c:define:YYCTYPE      = "char";
@@ -312,7 +325,7 @@ std::optional<Token> lex(LexerState& state)
 
             delimiter           { continue; }
 
-            reserved_abs        { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::ABS }; }
+            reserved_abs        { return reserved_fn(ReservedWordKind::ABS); }
             reserved_access     { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::ACCESS }; }
             reserved_after      { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::AFTER }; }
             reserved_alias      { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::ALIAS }; }
