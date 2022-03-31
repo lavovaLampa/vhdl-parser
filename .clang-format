@@ -1,0 +1,25 @@
+# AlignArrayOfStructures: Right
+AlignOperands: Align
+AllowShortEnumsOnASingleLine: True
+AllowAllArgumentsOnNextLine: False
+AllowAllParametersOfDeclarationOnNextLine: False
+BinPackArguments: False
+BinPackParameters: False
+# BraceWrapping:
+#   AfterCaseLabel: False
+#   AfterClass: False
+#   AfterControlStatement: False
+#   AfterEnum: False
+#   AfterFunction: True
+#   AfterNamespace: False
+#   AfterStruct: False
+#   AfterUnion: False
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeTernaryOperators: True
+BasedOnStyle: WebKit
+ColumnLimit: 90
+FixNamespaceComments: True
+IncludeBlocks: Regroup
+ReflowComments: False
+SortIncludes: CaseSensitive
+SpaceAfterLogicalNot: True
