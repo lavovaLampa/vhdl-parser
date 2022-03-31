@@ -1,15 +1,17 @@
+#include "lexer.h"
+
+#include "lexer_defs.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <cuchar>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <optional>
 #include <ranges>
 #include <variant>
-
-#include "lexer.h"
-#include "lexer_defs.h"
 
 namespace Lexer {
 /*!re2c
@@ -27,9 +29,9 @@ static std::string string_filter_quotes(std::string&& lit)
     // FIXME: Not UTF-8 aware
     for (size_t read_idx { 0 }; read_idx < lit.length(); read_idx++) {
         const char curr_char { lit[read_idx] };
-        const bool advance_write_ptr { (curr_char != '"') || (!prev_quote) };
+        const bool advance_write_ptr { (curr_char != '"') || (! prev_quote) };
 
-        prev_quote = (curr_char == '"') && (!prev_quote);
+        prev_quote = (curr_char == '"') && (! prev_quote);
 
         lit[write_idx] = curr_char;
 
@@ -50,11 +52,9 @@ static StringLiteral parse_string_literal(size_t offset, std::string_view view)
     const char* marker {};
     const char* ctxmarker {};
 
-    StringLiteral result {
-        { offset, view },
+    StringLiteral result { { offset, view },
         string_filter_quotes(std::string { view, 1, view.length() - 2 }),
-        std::nullopt
-    };
+        std::nullopt };
 
     /*!re2c
         re2c:define:YYCTYPE      = "char";
@@ -136,11 +136,32 @@ static StringLiteral parse_string_literal(size_t offset, std::string_view view)
     return result;
 }
 
+/**
+ * @brief Remove underscores from the given string
+ * 
+ * @param str   String to change in-place
+ */
 static inline void filter_underscores(std::string& str)
 {
-    auto fn { [](char cr) { return cr != '_'; } };
+    auto result {
+        std::ranges::copy_if(str, str.begin(), [](char cr) { return cr != '_'; })
+    };
+    str.resize(std::ranges::distance(str.begin(), result.out));
+    str.shrink_to_fit();
+}
 
-    std::copy_if(str.cbegin(), str.cend(), str.begin(), fn);
+/**
+ * @brief 
+ * 
+ * @param offset            Offset in the file string view
+ * @param view              A string view containing raw based literal string
+ * @return BasedLiteral     Parsed BasedLiteral struct
+ */
+BasedLiteral parse_based_literal(size_t offset, std::string_view view)
+{
+    std::string val { view };
+
+    filter_underscores(val);
 }
 
 std::optional<Token> lex(LexerState& state)
@@ -156,7 +177,9 @@ std::optional<Token> lex(LexerState& state)
         const char* const begin_cursor { state.cursor };
         const size_t begin_offset { static_cast<size_t>(state.cursor - state.base) };
         const auto reserved_fn { [&](ReservedWordKind kind) {
-            return ReservedWord { { begin_offset, std::string_view { begin_cursor, static_cast<size_t>(cursor - begin_cursor) } },
+            return ReservedWord { { begin_offset,
+                                      std::string_view { begin_cursor,
+                                          static_cast<size_t>(cursor - begin_cursor) } },
                 kind };
         } };
 
