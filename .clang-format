@@ -1,8 +1,9 @@
+AlignAfterOpenBracket: AlwaysBreak
 # AlignArrayOfStructures: Right
-AlignOperands: Align
-AllowShortEnumsOnASingleLine: True
-AllowAllArgumentsOnNextLine: False
-AllowAllParametersOfDeclarationOnNextLine: False
+# AlignOperands: Align
+# AllowShortEnumsOnASingleLine: True
+# AllowAllArgumentsOnNextLine: False
+# AllowAllParametersOfDeclarationOnNextLine: False
 BinPackArguments: False
 BinPackParameters: False
 # BraceWrapping:
@@ -17,7 +18,7 @@ BinPackParameters: False
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeTernaryOperators: True
 BasedOnStyle: WebKit
-ColumnLimit: 90
+# ColumnLimit: 90
 FixNamespaceComments: True
 IncludeBlocks: Regroup
 ReflowComments: False
