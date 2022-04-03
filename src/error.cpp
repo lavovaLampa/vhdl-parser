@@ -1,12 +1,14 @@
 #include "error.hpp"
 
 #include <iostream>
+#include <string>
 
-std::ostream& Error::operator<<(std::ostream& out)
+
+std::ostream& operator<<(std::ostream& out, const Error& err)
 {
-    if (this->msg.has_value()) {
+    if (err.msg.has_value()) {
         out << "Error message: \""
-            << this->msg.value()
+            << err.msg.value()
             << "\"";
     }
 

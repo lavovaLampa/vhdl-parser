@@ -4,7 +4,7 @@
 #include <optional>
 #include <variant>
 
-#include "lexer_defs.h"
+#include "lexer_defs.hpp"
 
 namespace Lexer {
 
@@ -114,12 +114,35 @@ std::ostream& operator<<(std::ostream& out, const OpSymbol& op)
     return out;
 }
 
+std::ostream& operator<<(std::ostream& out, const BitStringBase base)
+{
+    const std::string_view str_map[] = {
+        "binary",
+        "octal",
+        "hexadecimal"
+    };
+
+    out << str_map[static_cast<int>(base)];
+
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Lexeme& lex)
+{
+    out << lex.offset
+        << ", \""
+        << lex.raw_view
+        << "\"";
+
+    return out;
+}
+
 std::ostream& operator<<(std::ostream& out, const Comment& comment)
 {
     out << "Comment("
-        << comment.offset
+        << static_cast<const Lexeme&>(comment)
         << ", \""
-        << comment.raw_view
+        << comment.val
         << "\")";
 
     return out;
@@ -128,9 +151,11 @@ std::ostream& operator<<(std::ostream& out, const Comment& comment)
 std::ostream& operator<<(std::ostream& out, const BitStringLiteral& lit)
 {
     out << "BitStringLiteral("
-        << lit.offset
+        << static_cast<const Lexeme&>(lit)
+        << ", "
+        << lit.base
         << ", \""
-        << lit.raw_view
+        << lit.val
         << "\")";
 
     return out;
@@ -139,35 +164,28 @@ std::ostream& operator<<(std::ostream& out, const BitStringLiteral& lit)
 std::ostream& operator<<(std::ostream& out, const CharacterLiteral& lit)
 {
     out << "CharacterLiteral("
-        << lit.offset
-        << ", \""
-        << lit.raw_view
-        << "\")";
+        << static_cast<const Lexeme&>(lit)
+        << ", '"
+        << lit.val
+        << "')";
 
     return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const StringLiteral& lit)
 {
+    out << "StringLiteral("
+        << static_cast<const Lexeme&>(lit)
+        << ", \""
+        << lit.val
+        << "\"";
+
     if (lit.operator_symbol.has_value()) {
-        out << "StringLiteral("
-            << lit.val
-            << ", "
-            << lit.operator_symbol.value()
-            << ", "
-            << lit.offset
-            << ", \""
-            << lit.raw_view
-            << "\")";
-    } else {
-        out << "StringLiteral("
-            << lit.val
-            << ", "
-            << lit.offset
-            << ", \""
-            << lit.raw_view
-            << "\")";
+        out << ", "
+            << lit.operator_symbol.value();
     }
+
+    out << ")";
 
     return out;
 }
@@ -175,9 +193,9 @@ std::ostream& operator<<(std::ostream& out, const StringLiteral& lit)
 std::ostream& operator<<(std::ostream& out, const BasicIdentifier& id)
 {
     out << "BasicIdentifier("
-        << id.offset
+        << static_cast<const Lexeme&>(id)
         << ", \""
-        << id.raw_view
+        << id.val
         << "\")";
 
     return out;
@@ -186,9 +204,9 @@ std::ostream& operator<<(std::ostream& out, const BasicIdentifier& id)
 std::ostream& operator<<(std::ostream& out, const ExtendedIdentifier& id)
 {
     out << "ExtendedIdentifier("
-        << id.offset
+        << static_cast<const Lexeme&>(id)
         << ", \""
-        << id.raw_view
+        << id.val
         << "\")";
 
     return out;
@@ -197,10 +215,8 @@ std::ostream& operator<<(std::ostream& out, const ExtendedIdentifier& id)
 std::ostream& operator<<(std::ostream& out, const ReservedWord& id)
 {
     out << "ReservedWord("
-        << id.offset
-        << ", \""
-        << id.raw_view
-        << "\", "
+        << static_cast<const Lexeme&>(id)
+        << ", "
         << id.kind
         << ")";
 
@@ -209,22 +225,53 @@ std::ostream& operator<<(std::ostream& out, const ReservedWord& id)
 
 std::ostream& operator<<(std::ostream& out, const BasedLiteral& lit)
 {
+    const std::string_view fraction_part {
+        lit.fraction_part.has_value() ?
+            std::to_string(lit.fraction_part.value()) : "NO FRACTION"
+    };
+
+    const std::string_view exponent {
+        lit.exponent.has_value() ?
+            std::to_string(lit.exponent.value()) : "NO EXPONENT"
+    };
+
     out << "BasedLiteral("
-        << lit.offset
-        << ", \""
-        << lit.raw_view
-        << "\")";
+        << static_cast<const Lexeme&>(lit)
+        << ", "
+        << lit.base
+        << ", "
+        << lit.decimal_part
+        << ", "
+        << fraction_part
+        << ", "
+        << exponent
+        << ")";
+
 
     return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const DecimalLiteral& lit)
 {
+    const std::string_view fraction_part {
+        lit.fraction_part.has_value() ?
+            std::to_string(lit.fraction_part.value()) : "NO FRACTION"
+    };
+
+    const std::string_view exponent {
+        lit.exponent.has_value() ?
+            std::to_string(lit.exponent.value()) : "NO EXPONENT"
+    };
+
     out << "DecimalLiteral("
-        << lit.offset
-        << ", \""
-        << lit.raw_view
-        << "\")";
+        << static_cast<const Lexeme&>(lit)
+        << ", "
+        << lit.decimal_part
+        << ", "
+        << fraction_part
+        << ", "
+        << exponent
+        << ")";
 
     return out;
 }
@@ -232,10 +279,8 @@ std::ostream& operator<<(std::ostream& out, const DecimalLiteral& lit)
 std::ostream& operator<<(std::ostream& out, const Delimiter& delim)
 {
     out << "Delimiter("
-        << delim.offset
-        << ", \""
-        << delim.raw_view
-        << "\", "
+        << static_cast<const Lexeme&>(delim)
+        << ", "
         << delim.kind
         << ")";
 

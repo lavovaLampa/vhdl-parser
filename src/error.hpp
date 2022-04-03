@@ -1,7 +1,9 @@
 #ifndef ERROR
 #define ERROR
 
+#include <iostream>
 #include <optional>
+#include <string>
 
 struct Error {
     std::optional<std::string> msg { std::nullopt };
@@ -11,16 +13,7 @@ struct Error {
     {
     }
 
-    inline virtual std::ostream& operator<<(std::ostream& out)
-    {
-        if (this->msg.has_value()) {
-            out << "Error message: \""
-                << this->msg.value()
-                << "\"";
-        }
-
-        return out;
-    }
+    friend std::ostream& operator<<(std::ostream& out, const Error& err);
 };
 
 #endif /* ERROR */

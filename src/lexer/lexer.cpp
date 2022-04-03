@@ -1,6 +1,6 @@
-#include "lexer.h"
+#include "lexer.hpp"
 
-#include "lexer_defs.h"
+#include "lexer_defs.hpp"
 #include "lexer_utils.hpp"
 #include "result/result.hpp"
 
@@ -26,43 +26,44 @@ namespace Lexer {
     re2c:api:style = free-form;
 */
 
-template <char C>
-static std::string string_remove_succ_chars(std::string&& lit)
-{
-    // Current write offset
-    size_t write_idx { 0 };
-    // Previous char is quote?
-    bool prev_quote { false };
+template <std::equality_comparable T, T M>
+class filter_adjacent_pairs {
+private:
+    bool prev_matched { false };
 
-    // FIXME: Not UTF-8 aware
-    for (size_t read_idx { 0 }; read_idx < lit.length(); read_idx++) {
-        const char curr_char { lit[read_idx] };
-        const bool advance_write_ptr { (curr_char != C) || (! prev_quote) };
+public:
+    auto operator()(T c) -> bool
+    {
+        const bool advance_write_ptr { (c != M) || (! this->prev_matched) };
+        this->prev_matched = (c == M) && (! this->prev_matched);
 
-        prev_quote = (curr_char == C) && (! prev_quote);
-
-        lit[write_idx] = curr_char;
-
-        if (advance_write_ptr) {
-            write_idx++;
-        }
+        return advance_write_ptr;
     }
-
-    lit.resize(write_idx);
-
-    return lit;
-}
+};
 
 static StringLiteral parse_string_literal(size_t offset, std::string_view view)
 {
+    Expects(view.size() >= 2);
+    Expects(
+        view[0] == '"'
+        && view[view.size() - 1] == '"'
+    );
+
     const char* const limit { view.data() + view.size() };
     const char* cursor { view.data() };
     const char* marker {};
     const char* ctxmarker {};
 
-    StringLiteral result { { offset, view },
-        string_remove_succ_chars<'"'>(std::string { view, 1, view.length() - 2 }),
-        std::nullopt };
+    auto string_view {
+        std::string_view { view.begin() + 1, view.end() - 1 }
+        | std::views::filter(filter_adjacent_pairs<char, '"'>())
+    };
+
+    StringLiteral result {
+        { offset, view },
+        std::string { string_view.begin(), string_view.end() },
+        std::nullopt
+    };
 
     /*!re2c
         re2c:define:YYCTYPE      = "char";
@@ -223,13 +224,14 @@ static auto parse_based_literal(
                 "Unable to parse fractional part of the based integer"
             });
         }
+        fractional_part = fractional_result.value();
     }
 
     std::optional<int32_t> exponent { std::nullopt };
     if (! str_exponent.empty()) {
         std::string str_exponent_clean { str_exponent };
 
-        if (str_exponent.starts_with('e') || str_exponent.starts_with('E')) {
+        if (str_exponent.starts_with('e')) {
             str_exponent_clean = str_exponent.substr(1);
         }
 
@@ -240,6 +242,7 @@ static auto parse_based_literal(
                 "Unable to parse exponent of the based integer"
             });
         }
+        exponent = exponent_result.value();
     }
 
     return BasedLiteral {
@@ -258,7 +261,7 @@ static auto parse_character_literal(
 ) noexcept -> cpp::result<CharacterLiteral, ParseError>
 {
     // TODO: Support UTF-8?
-    char32_t chr { view[1] };
+    char chr { view[1] };
 
     return CharacterLiteral {
         { offset, view },
@@ -272,7 +275,7 @@ static auto parse_bitstring_literal(
 ) noexcept -> cpp::result<BitStringLiteral, ParseError>
 {
     Expects(view.size() >= 3);
-    Expects(view[2] == '"');
+    Expects(view[1] == '"');
     Expects(view[view.size() - 1] == '"');
     Expects(
         std::tolower(static_cast<unsigned char>(view[0])) == 'b'
@@ -420,15 +423,39 @@ static auto parse_extended_identifier(
     std::string_view view
 ) noexcept -> cpp::result<ExtendedIdentifier, ParseError>
 {
-    Expects(view[0] == '\\');
+    Expects(view.size() >= 3);
+    Expects(
+        (view[0] == '\\')
+        && (view[view.size() - 1] == '\\')
+    );
+
+    auto filter_view {
+        std::string_view { view.begin() + 1, view.end() - 1 }
+        | std::views::filter(filter_adjacent_pairs<char, '\\'>())
+    };
 
     return ExtendedIdentifier {
         { offset, view },
-        std::string { view, 1, view.size() - 2 }
+        std::string { filter_view.begin(), filter_view.end() }
     };
 }
 
-auto lex(LexerState& state) -> std::optional<Token>
+static auto parse_comment(
+    size_t offset,
+    std::string_view view
+) noexcept -> cpp::result<Comment, ParseError>
+{
+    Expects(view.size() >= 2);
+    Expects(view.substr(0, 2) == "--");
+
+    return Comment {
+        { offset, view },
+        // Skip start of comment
+        std::string { view.substr(2) }
+    };
+}
+
+auto lex(LexerState& state) -> cpp::result<Token, ParseError>
 {
     const char* const base { state.base };
     const char* const limit { state.limit };
@@ -718,12 +745,12 @@ auto lex(LexerState& state) -> std::optional<Token>
             reserved_xnor       { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::XNOR }; }
             reserved_xor        { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::XOR }; }
 
-            comment                     { return Comment { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, "" }; }
+            comment                     { return parse_comment(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             bitstring_literal           { return parse_bitstring_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             character_literal           { return parse_character_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             string_literal              { return parse_string_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
-            basic_identifier            { return BasicIdentifier { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, "" }; }
-            extended_identifier         { return ExtendedIdentifier { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, "" }; }
+            basic_identifier            { return parse_basic_identifier(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
+            extended_identifier         { return parse_extended_identifier(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             based_literal               { return parse_based_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             decimal_literal             { return parse_decimal_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
 
@@ -754,7 +781,12 @@ auto lex(LexerState& state) -> std::optional<Token>
             delim_slash                 { return Delimiter { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, DelimiterKind::slash }; }
             delim_vertical_line         { return Delimiter { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, DelimiterKind::vertical_line }; }
 
-            * { return std::nullopt; }
+            * {
+                return cpp::failure(ParseError {
+                    parse_error_kind::invalid_argument,
+                    "Unable to recognize current token"
+                });
+            }
          */
     }
 }

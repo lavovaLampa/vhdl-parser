@@ -5,8 +5,9 @@
 #include <optional>
 #include <variant>
 
-#include "lexer/lexer.h"
-#include "lexer/lexer_defs.h"
+#include "lexer/lexer.hpp"
+#include "lexer/lexer_defs.hpp"
+#include "lexer/lexer_utils.hpp"
 
 namespace fs = std::filesystem;
 
@@ -59,7 +60,8 @@ int main(int argc, char const* argv[])
             if (result.has_value()) {
                 std::visit([](auto& arg) { std::cout << arg << std::endl; }, result.value());
             } else {
-                std::cout << "No value lexed!" << std::endl;
+                auto error { result.error() };
+                std::cout << error << std::endl;
             }
         }
     } else {

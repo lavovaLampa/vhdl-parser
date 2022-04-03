@@ -1,7 +1,6 @@
 #ifndef LEXER_DATA
 #define LEXER_DATA
 
-#include <cuchar>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -118,7 +117,7 @@ struct BitStringLiteral : Lexeme {
 };
 
 struct CharacterLiteral : Lexeme {
-    char32_t val;
+    char val;
 };
 
 struct StringLiteral : Lexeme {
@@ -167,6 +166,8 @@ using Token = std::variant<
     DecimalLiteral,
     Delimiter>;
 
+std::ostream& operator<<(std::ostream& out, const BitStringBase base);
+std::ostream& operator<<(std::ostream& out, const Lexeme& lex);
 std::ostream& operator<<(std::ostream& out, const DelimiterKind& kind);
 std::ostream& operator<<(std::ostream& out, const ReservedWordKind& kind);
 std::ostream& operator<<(std::ostream& out, const OpSymbol& op);
