@@ -7,6 +7,7 @@ add_executable(Lexer
     src/main.cpp
     src/lexer/lexer_defs.cpp
     src/lexer/lexer_out.cpp
+    src/lexer/lexer_utils.cpp
     src/parser/parser_defs.cpp
 )
 
