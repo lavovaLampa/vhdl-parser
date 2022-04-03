@@ -1,16 +1,23 @@
 #include "lexer.h"
 
 #include "lexer_defs.h"
+#include "lexer_utils.hpp"
+#include "result/result.hpp"
 
 #include <algorithm>
+#include <cassert>
+#include <charconv>
 #include <cstdint>
 #include <cuchar>
 #include <filesystem>
 #include <fstream>
+#include <gsl/pointers>
+#include <gsl/assert>
 #include <iostream>
 #include <iterator>
 #include <optional>
 #include <ranges>
+#include <string>
 #include <variant>
 
 namespace Lexer {
@@ -19,7 +26,8 @@ namespace Lexer {
     re2c:api:style = free-form;
 */
 
-static std::string string_filter_quotes(std::string&& lit)
+template <char C>
+static std::string string_remove_succ_chars(std::string&& lit)
 {
     // Current write offset
     size_t write_idx { 0 };
@@ -29,9 +37,9 @@ static std::string string_filter_quotes(std::string&& lit)
     // FIXME: Not UTF-8 aware
     for (size_t read_idx { 0 }; read_idx < lit.length(); read_idx++) {
         const char curr_char { lit[read_idx] };
-        const bool advance_write_ptr { (curr_char != '"') || (! prev_quote) };
+        const bool advance_write_ptr { (curr_char != C) || (! prev_quote) };
 
-        prev_quote = (curr_char == '"') && (! prev_quote);
+        prev_quote = (curr_char == C) && (! prev_quote);
 
         lit[write_idx] = curr_char;
 
@@ -53,7 +61,7 @@ static StringLiteral parse_string_literal(size_t offset, std::string_view view)
     const char* ctxmarker {};
 
     StringLiteral result { { offset, view },
-        string_filter_quotes(std::string { view, 1, view.length() - 2 }),
+        string_remove_succ_chars<'"'>(std::string { view, 1, view.length() - 2 }),
         std::nullopt };
 
     /*!re2c
@@ -136,35 +144,291 @@ static StringLiteral parse_string_literal(size_t offset, std::string_view view)
     return result;
 }
 
-/**
- * @brief Remove underscores from the given string
- * 
- * @param str   String to change in-place
- */
-static inline void filter_underscores(std::string& str)
+static auto parse_based_literal(
+    size_t offset,
+    std::string_view view
+) noexcept -> cpp::result<BasedLiteral, ParseError>
 {
-    auto result {
-        std::ranges::copy_if(str, str.begin(), [](char cr) { return cr != '_'; })
+    auto split_view {
+        view
+        | std::views::filter([](char cr) { return cr != '_'; })
+        | std::views::transform([](unsigned char c) { return std::tolower(c); })
+        | std::views::split('#')
+        | std::views::transform([](auto view) {
+              auto iter = view | std::views::common;
+              return std::string { iter.begin(), iter.end() };
+          })
     };
-    str.resize(std::ranges::distance(str.begin(), result.out));
-    str.shrink_to_fit();
+
+    auto split_view_iter { split_view.begin() };
+
+    const std::string str_base { *split_view_iter };
+    const std::string str_integer { *(++split_view_iter) };
+    const std::string str_exponent { *(++split_view_iter) };
+
+    // Based integer base part cannot be empty
+    assert(! str_base.empty());
+    // Based integer integer part cannot be empty
+    assert(! str_integer.empty());
+
+    const auto integer_split {
+        str_integer
+        | std::views::split('.')
+        | std::views::transform([](auto view) {
+              auto iter = view | std::views::common;
+              return std::string { iter.begin(), iter.end() };
+          })
+    };
+
+    auto integer_split_iter { integer_split.begin() };
+
+    const std::string str_decimal_part { *integer_split_iter };
+    const std::string str_fractional_part { *(++integer_split_iter) };
+
+    // Decimal part cannot be empty
+    assert(! str_decimal_part.empty());
+
+    int32_t base {};
+    auto base_result { parse_int32_t(str_base) };
+    if (base_result.has_error()) {
+        return cpp::failure(ParseError {
+            base_result.error().kind,
+            "Unable to parse based integer range"
+        });
+    }
+    base = base_result.value();
+    if (! (2 <= base <= 16)) {
+        return cpp::failure(ParseError {
+            parse_error_kind::out_of_range,
+            "Based integer base is out of range (must be between <2, 16>)"
+        });
+    }
+
+    int32_t decimal_part {};
+    auto decimal_result { parse_int32_t(str_decimal_part, base) };
+    if (decimal_result.has_error()) {
+        return cpp::failure(ParseError {
+            decimal_result.error().kind,
+            "Unable to parse integer part of the based integer"
+        });
+    }
+    decimal_part = decimal_result.value();
+
+    std::optional<int32_t> fractional_part { std::nullopt };
+    if (! str_fractional_part.empty()) {
+        auto fractional_result { parse_int32_t(str_fractional_part, base) };
+        if (fractional_result.has_error()) {
+            return cpp::failure(ParseError {
+                fractional_result.error().kind,
+                "Unable to parse fractional part of the based integer"
+            });
+        }
+    }
+
+    std::optional<int32_t> exponent { std::nullopt };
+    if (! str_exponent.empty()) {
+        std::string str_exponent_clean { str_exponent };
+
+        if (str_exponent.starts_with('e') || str_exponent.starts_with('E')) {
+            str_exponent_clean = str_exponent.substr(1);
+        }
+
+        auto exponent_result { parse_int32_t(str_exponent_clean, 10) };
+        if (exponent_result.has_error()) {
+            return cpp::failure(ParseError {
+                exponent_result.error().kind,
+                "Unable to parse exponent of the based integer"
+            });
+        }
+    }
+
+    return BasedLiteral {
+        { offset,
+            view },
+        base,
+        decimal_part,
+        fractional_part,
+        exponent
+    };
 }
 
-/**
- * @brief 
- * 
- * @param offset            Offset in the file string view
- * @param view              A string view containing raw based literal string
- * @return BasedLiteral     Parsed BasedLiteral struct
- */
-BasedLiteral parse_based_literal(size_t offset, std::string_view view)
+static auto parse_character_literal(
+    size_t offset,
+    std::string_view view
+) noexcept -> cpp::result<CharacterLiteral, ParseError>
 {
-    std::string val { view };
+    // TODO: Support UTF-8?
+    char32_t chr { view[1] };
 
-    filter_underscores(val);
+    return CharacterLiteral {
+        { offset, view },
+        chr
+    };
 }
 
-std::optional<Token> lex(LexerState& state)
+static auto parse_bitstring_literal(
+    size_t offset,
+    std::string_view view
+) noexcept -> cpp::result<BitStringLiteral, ParseError>
+{
+    Expects(view.size() >= 3);
+    Expects(view[2] == '"');
+    Expects(view[view.size() - 1] == '"');
+    Expects(
+        std::tolower(static_cast<unsigned char>(view[0])) == 'b'
+        || std::tolower(static_cast<unsigned char>(view[0])) == 'x'
+        || std::tolower(static_cast<unsigned char>(view[0])) == 'o'
+    );
+
+    auto filtered_view {
+        view
+        | std::views::filter([](char c) { return c != '_'; })
+        | std::views::transform([](unsigned char c) { return std::tolower(c); })
+        | std::views::common
+    };
+
+    // TODO: Why create intermediate string?
+    std::string lower_string { filtered_view.begin(), filtered_view.end() };
+
+    BitStringBase base { BitStringBase::binary };
+    switch (lower_string[0]) {
+        case 'x': base = BitStringBase::hexadecimal; break;
+        case 'o': base = BitStringBase::octal; break;
+        case 'b': base = BitStringBase::binary; break;
+    }
+
+    return BitStringLiteral {
+        { offset, view },
+        base,
+        std::string { lower_string, 2, lower_string.size() - 3 }
+    };
+}
+
+static auto parse_decimal_literal(
+    size_t offset,
+    std::string_view view
+) noexcept -> cpp::result<DecimalLiteral, ParseError>
+{
+    Expects(view.size() >= 1);
+    Expects(std::ranges::all_of(
+        view,
+        [](unsigned char c) {
+            return (
+                c == '_'
+                || c == '.'
+                || std::tolower(c) == 'e'
+                || c == '+'
+                || c == '-'
+                || std::isdigit(c)
+            );
+        }
+    ));
+
+    auto filtered_view {
+        view
+        | std::views::filter([](char c) { return c != '_'; })
+        | std::views::transform([](unsigned char c) { return std::tolower(c); })
+        | std::views::split('e')
+        | std::views::transform([](auto view) {
+            auto iter = view | std::views::common;
+            return std::string { iter.begin(), iter.end() };
+        })
+    };
+
+    auto view_iter { filtered_view.begin() };
+
+    const std::string str_integer { *view_iter };
+    const std::string str_exponent { *(++view_iter) };
+
+    auto integer_view {
+        str_integer
+        | std::views::split('.')
+        | std::views::transform([](auto view) {
+            auto iter = view | std::views::common;
+            return std::string { iter.begin(), iter.end() };
+        })
+    };
+
+    auto integer_iter { integer_view.begin() };
+
+    const std::string str_decimal_part { *integer_iter };
+    const std::string str_fraction_part { *(++integer_iter) };
+
+    assert(! str_decimal_part.empty());
+
+    int32_t decimal_part { 0 };
+    auto decimal_result { parse_int32_t(str_decimal_part) };
+    if (decimal_result.has_error()) {
+        return cpp::failure(ParseError {
+            decimal_result.error().kind,
+            "Unable to parse decimal part of a decimal literal"
+        });
+    }
+    decimal_part = decimal_result.value();
+
+    std::optional<int32_t> fraction_part { std::nullopt };
+    if (! str_fraction_part.empty()) {
+        auto fraction_part_result { parse_int32_t(str_fraction_part) };
+        if (fraction_part_result.has_error()) {
+            return cpp::failure(ParseError {
+                fraction_part_result.error().kind,
+                "Unable to parse fractional part of a decimal literal"
+            });
+        }
+        fraction_part = fraction_part_result.value();
+    }
+
+    std::optional<int32_t> exponent { std::nullopt };
+    if (! str_exponent.empty()) {
+        auto exponent_result { parse_int32_t(str_exponent) };
+        if (exponent_result.has_error()) {
+            return cpp::failure(ParseError {
+                exponent_result.error().kind,
+                "Unable to parse exponent of a decimal literal"
+            });
+        }
+        exponent = exponent_result.value();
+    }
+
+    return DecimalLiteral {
+        { offset, view },
+        decimal_part,
+        fraction_part,
+        exponent
+    };
+}
+
+static auto parse_basic_identifier(
+    size_t offset,
+    std::string_view view
+) noexcept -> cpp::result<BasicIdentifier, ParseError>
+{
+    auto lower_view {
+        view
+        | std::views::transform([](unsigned char c) { return std::tolower(c); })
+        | std::views::common
+    };
+
+    return BasicIdentifier {
+        { offset, view },
+        std::string { lower_view.begin(), lower_view.end() }
+    };
+}
+
+static auto parse_extended_identifier(
+    size_t offset,
+    std::string_view view
+) noexcept -> cpp::result<ExtendedIdentifier, ParseError>
+{
+    Expects(view[0] == '\\');
+
+    return ExtendedIdentifier {
+        { offset, view },
+        std::string { view, 1, view.size() - 2 }
+    };
+}
+
+auto lex(LexerState& state) -> std::optional<Token>
 {
     const char* const base { state.base };
     const char* const limit { state.limit };
@@ -176,12 +440,18 @@ std::optional<Token> lex(LexerState& state)
     for (;;) {
         const char* const begin_cursor { state.cursor };
         const size_t begin_offset { static_cast<size_t>(state.cursor - state.base) };
-        const auto reserved_fn { [&](ReservedWordKind kind) {
-            return ReservedWord { { begin_offset,
-                                      std::string_view { begin_cursor,
-                                          static_cast<size_t>(cursor - begin_cursor) } },
-                kind };
-        } };
+        const auto reserved_fn {
+            [&](ReservedWordKind kind) {
+                return ReservedWord { {
+                    begin_offset,
+                    std::string_view {
+                        begin_cursor,
+                        static_cast<size_t>(cursor - begin_cursor)
+                    }
+                },
+                kind
+            }; }
+        };
 
         /*!re2c
             re2c:define:YYCTYPE      = "char";
@@ -449,13 +719,13 @@ std::optional<Token> lex(LexerState& state)
             reserved_xor        { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::XOR }; }
 
             comment                     { return Comment { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, "" }; }
-            bitstring_literal           { return BitStringLiteral { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, BitStringBase::BINARY, "" }; }
-            character_literal           { return CharacterLiteral { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, 'a' }; }
+            bitstring_literal           { return parse_bitstring_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
+            character_literal           { return parse_character_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             string_literal              { return parse_string_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             basic_identifier            { return BasicIdentifier { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, "" }; }
             extended_identifier         { return ExtendedIdentifier { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, "" }; }
-            based_literal               { return BasedLiteral { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, 0, 0 }; }
-            decimal_literal             { return DecimalLiteral { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, 0 }; }
+            based_literal               { return parse_based_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
+            decimal_literal             { return parse_decimal_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
 
             delim_arrow                 { return Delimiter { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, DelimiterKind::arrow }; }
             delim_box                   { return Delimiter { begin_offset, std::string_view {begin_cursor, cursor - begin_cursor}, DelimiterKind::box }; }

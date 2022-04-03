@@ -98,9 +98,9 @@ enum class OpSymbol {
 };
 
 enum class BitStringBase {
-    BINARY,
-    OCTAL,
-    HEXADECIMAL
+    binary,
+    octal,
+    hexadecimal
 };
 
 struct Lexeme {
@@ -139,16 +139,16 @@ struct ReservedWord : Lexeme {
 };
 
 struct BasedLiteral : Lexeme {
-    uint8_t base;
-    uint64_t decimal_part;
-    std::optional<uint64_t> fraction_part { std::nullopt };
-    int64_t exponent { 1 };
+    int32_t base;
+    int32_t decimal_part;
+    std::optional<int32_t> fraction_part { std::nullopt };
+    std::optional<int32_t> exponent { std::nullopt };
 };
 
 struct DecimalLiteral : Lexeme {
-    uint64_t decimal_part;
-    std::optional<uint64_t> fraction_part { std::nullopt };
-    int64_t exponent { 1 };
+    int32_t decimal_part;
+    std::optional<int32_t> fraction_part { std::nullopt };
+    std::optional<int32_t> exponent { std::nullopt };
 };
 
 struct Delimiter : Lexeme {
