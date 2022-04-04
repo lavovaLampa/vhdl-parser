@@ -172,7 +172,7 @@ static auto parse_based_literal(
     // Based integer integer part cannot be empty
     assert(! str_integer.empty());
 
-    const auto integer_split {
+    auto integer_split {
         str_integer
         | std::views::split('.')
         | std::views::transform([](auto view) {
