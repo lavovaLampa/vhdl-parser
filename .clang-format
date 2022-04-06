@@ -2,6 +2,7 @@ AlignAfterOpenBracket: AlwaysBreak
 # AlignArrayOfStructures: Right
 # AlignOperands: Align
 # AllowShortEnumsOnASingleLine: True
+AllowShortCaseLabelsOnASingleLine: True
 # AllowAllArgumentsOnNextLine: False
 # AllowAllParametersOfDeclarationOnNextLine: False
 BinPackArguments: False
@@ -21,6 +22,7 @@ BasedOnStyle: WebKit
 # ColumnLimit: 90
 FixNamespaceComments: True
 IncludeBlocks: Regroup
+IndentCaseLabels: True
 ReflowComments: False
 SortIncludes: CaseSensitive
 SpaceAfterLogicalNot: True
