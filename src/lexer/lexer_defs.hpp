@@ -166,11 +166,13 @@ using Token = std::variant<
     DecimalLiteral,
     Delimiter>;
 
-std::ostream& operator<<(std::ostream& out, const BitStringBase base);
 std::ostream& operator<<(std::ostream& out, const Lexeme& lex);
-std::ostream& operator<<(std::ostream& out, const DelimiterKind& kind);
-std::ostream& operator<<(std::ostream& out, const ReservedWordKind& kind);
-std::ostream& operator<<(std::ostream& out, const OpSymbol& op);
+
+std::ostream& operator<<(std::ostream& out, const BitStringBase base);
+std::ostream& operator<<(std::ostream& out, const DelimiterKind kind);
+std::ostream& operator<<(std::ostream& out, const ReservedWordKind kind);
+std::ostream& operator<<(std::ostream& out, const OpSymbol op);
+
 std::ostream& operator<<(std::ostream& out, const Comment& comment);
 std::ostream& operator<<(std::ostream& out, const BitStringLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const CharacterLiteral& lit);
