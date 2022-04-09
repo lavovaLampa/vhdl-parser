@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-namespace Lexer {
+namespace lexer {
 
 enum class parse_error_kind {
     invalid_argument,
@@ -36,6 +36,6 @@ auto parse_int32_t(
 ) noexcept -> cpp::result<int32_t, ParseError>;
 std::ostream& operator<<(std::ostream& out, const parse_error_kind& kind);
 
-} // namespace Lexer
+} // namespace lexer
 
 #endif /* LEXER_UTILS */

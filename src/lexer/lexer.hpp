@@ -5,7 +5,7 @@
 #include "lexer_defs.hpp"
 #include "lexer_utils.hpp"
 
-namespace Lexer {
+namespace lexer {
 
 struct LexerState {
     const char* const base;
@@ -15,6 +15,6 @@ struct LexerState {
 
 auto lex(LexerState& state) -> cpp::result<Token, ParseError>;
 
-} // namespace Lexer
+} // namespace lexer
 
 #endif /* LEXER */

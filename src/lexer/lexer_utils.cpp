@@ -5,7 +5,7 @@
 #include <result/result.hpp>
 #include <string>
 
-namespace Lexer {
+namespace lexer {
 
 auto parse_int32_t(
     const std::string& str,
@@ -54,4 +54,4 @@ std::ostream& operator<<(std::ostream& out, const ParseError& err)
     return out;
 }
 
-} // namespace Lexer
+} // namespace lexer

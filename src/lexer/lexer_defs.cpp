@@ -6,7 +6,7 @@
 #include <optional>
 #include <variant>
 
-namespace Lexer {
+namespace lexer {
 
 std::ostream& operator<<(std::ostream& out, DelimiterKind kind)
 {
@@ -363,4 +363,4 @@ std::ostream& operator<<(std::ostream& out, const Delimiter& delim)
     return out;
 }
 
-} // namespace Lexer
+} // namespace lexer

@@ -7,7 +7,7 @@
 #include <string_view>
 #include <variant>
 
-namespace Lexer {
+namespace lexer {
 
 enum class DelimiterKind {
     // Compound delimiters (2 characters)
@@ -184,6 +184,6 @@ std::ostream& operator<<(std::ostream& out, const BasedLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const DecimalLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const Delimiter& delim);
 
-} // namespace Lexer
+} // namespace lexer
 
 #endif /* LEXER_DATA */

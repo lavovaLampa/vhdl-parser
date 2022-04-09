@@ -20,7 +20,7 @@
 #include <string>
 #include <variant>
 
-namespace Lexer {
+namespace lexer {
 /*!re2c
     re2c:flags:input = custom;
     re2c:api:style = free-form;
@@ -361,7 +361,7 @@ static auto parse_decimal_literal(
 
     int32_t decimal_part { 0 };
     auto decimal_result { parse_int32_t(str_decimal_part) };
-    if (decimal_result.has_error()) {
+    if (! decimal_result) {
         return cpp::failure(ParseError {
             decimal_result.error().kind,
             "Unable to parse decimal part of a decimal literal"
@@ -646,7 +646,13 @@ auto lex(LexerState& state) -> cpp::result<Token, ParseError>
             delimiter           { continue; }
 
             reserved_abs        { return reserved_fn(ReservedWordKind::ABS); }
-            reserved_access     { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::ACCESS }; }
+            reserved_access     {
+                                    return ReservedWord {
+                                        begin_offset,
+                                        std::string_view { begin_cursor, cursor - begin_cursor },
+                                        ReservedWordKind::ACCESS
+                                    };
+                                }
             reserved_after      { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::AFTER }; }
             reserved_alias      { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::ALIAS }; }
             reserved_all        { return ReservedWord { begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }, ReservedWordKind::ALL }; }
@@ -791,4 +797,4 @@ auto lex(LexerState& state) -> cpp::result<Token, ParseError>
     }
 }
 
-} // namespace Lexer
+} // namespace lexer
