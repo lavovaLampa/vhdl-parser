@@ -1,36 +1,283 @@
 #ifndef PARSER_DEFS
 #define PARSER_DEFS
 
+#include "lexer/lexer_defs.hpp"
+
+#include <gsl/pointers>
 #include <memory>
 #include <optional>
 #include <variant>
 #include <vector>
 
-#include <gsl/pointers>
-
-#include "lexer/lexer_defs.h"
-
 namespace parser {
+
+struct AccessTypeDefinition;
+struct ActualPart;
+struct AliasDeclaration;
+struct ArchitectureBody;
+struct Assertion;
+struct AssertionStatement;
+struct AssociationElement;
+struct AstNode;
+struct AttributeDeclaration;
+struct AttributeName;
+struct AttributeSpecification;
+struct BindingIndication;
+struct BlockConfiguration;
+struct BlockHeader;
+struct BlockHeaderGenericClause;
+struct BlockHeaderPortClause;
+struct BlockSpecification;
+struct BlockStatement;
+struct CaseAlternative;
+struct CaseStatement;
+struct ChoicesExpression;
+struct ComponentConfiguration;
+struct ComponentDeclaration;
+struct ComponentInstantiation;
+struct ComponentSpecification;
+struct ComponentUnit;
+struct ConcurrentAssertion;
+struct ConcurrentConditionalSignalAssignment;
+struct ConcurrentProcedureCall;
+struct ConcurrentSelectedSignalAssignment;
+struct ConditionalSignalAssignment;
+struct ConditionalWaveform;
+struct ConditionalWaveforms;
+struct ConditionClause;
+struct ConfigurationDeclaration;
+struct ConfigurationName;
+struct ConfigurationSpecification;
+struct ConfigurationUnit;
+struct ConstantDeclaration;
+struct ConstrainedArrayDefinition;
+struct DesignFile;
+struct DesignUnit;
+struct DisconnectionSpecification;
+struct ElementDeclaration;
+struct EntityClassEntry;
+struct EntityDeclaration;
+struct EntityDesignator;
+struct EntityName;
+struct EntitySpecification;
+struct EntityUnit;
+struct EnumerationTypeDefinition;
+struct ExitStatement;
+struct ExpandedSelectedName;
+struct Expression;
+struct Factor;
+struct FileDeclaration;
+struct FileOpenInformation;
+struct FileTypeDefinition;
+struct FormalDesignator;
+struct FormalPart;
+struct FunctionCall;
+struct FunctionSpecification;
+struct GenerateStatement;
+struct GenericClause;
+struct GenericMapAspect;
+struct GroupDeclaration;
+struct GroupTemplateDeclaration;
+struct GuardedSignalSpecification;
+struct IfStatement;
+struct IndexConstraint;
+struct IndexedName;
+struct InterfaceConstantDeclaration;
+struct InterfaceFileDeclaration;
+struct InterfaceSignalDeclaration;
+struct InterfaceUnresolvedDeclaration;
+struct InterfaceVariableDeclaration;
+struct LibraryClause;
+struct LoopStatement;
+struct NextStatement;
+struct NullStatement;
+struct OperatorSymbol;
+struct Options;
+struct PackageBody;
+struct PackageDeclaration;
+struct ParameterSpecification;
+struct PhysicalLiteral;
+struct PhysicalTypeDefinition;
+struct PlainVariableDeclaration;
+struct PortClause;
+struct PortMapAspect;
+struct ProcedureCall;
+struct ProcedureCallStatement;
+struct ProcedureSpecification;
+struct ProcessStatement;
+struct ProtectedTypeBody;
+struct ProtectedTypeDeclaration;
+struct QualifiedExpression;
+struct RecordTypeDefinition;
+struct Relation;
+struct ReportStatement;
+struct ReturnStatement;
+struct SecondaryUnitDeclaration;
+struct SelectedName;
+struct SelectedSignalAssignment;
+struct SelectedWaveform;
+struct SharedVariableDeclaration;
+struct ShiftExpression;
+struct SignalAssignmentStatement;
+struct SignalDeclaration;
+struct Signature;
+struct SimpleExpression;
+struct SimpleRange;
+struct SliceName;
+struct SubprogramBody;
+struct SubtypeDeclaration;
+struct SubtypeIndication;
+struct Term;
+struct TypeConversion;
+struct TypeDeclaration;
+struct UnconstrainedArrayDefinition;
+struct UseClause;
+struct VariableAssignmentStatement;
+struct WaitStatement;
 
 struct AstNode {
 };
 
 namespace Keyword {
-    struct Transport;
-    struct Inertial;
-    struct Open;
-    struct Others;
-    struct Open;
-    struct All;
-    struct Null;
-    struct Unaffected;
-}
+    struct Transport {
+    };
+    struct Inertial {
+    };
+    struct Open {
+    };
+    struct Others {
+    };
+    struct Open {
+    };
+    struct All {
+    };
+    struct Null {
+    };
+    struct Unaffected {
+    };
+} // namespace Keyword
+
+enum class EntityClass {
+    architecture,
+    component,
+    configuration,
+    constant,
+    entity,
+    function,
+    label,
+    literal,
+    package,
+    procedure,
+    signal,
+    subtype,
+    type,
+    units,
+    variable
+};
+
+enum class RelationKind {
+    AND,
+    OR,
+    XOR,
+    nand,
+    nor,
+    xnor,
+};
+
+enum class FactorKind {
+    exp,
+    abs,
+    NOT,
+
+    // No operator, just a single primary
+    NONE
+};
+
+enum class Mode {
+    in,
+    out,
+    inout,
+    buffer,
+    linkage
+};
+
+enum class Direction {
+    to,
+    downto
+};
+
+enum class RelOp {
+    eq,
+    neq,
+    lt,
+    lte,
+    gt,
+    gte
+};
+
+enum class ShiftOperator {
+    sll,
+    srl,
+    sla,
+    sra,
+    rol,
+    ror
+};
+
+enum class SignalKind {
+    reg,
+    bus
+};
+
+enum class Sign {
+    plus,
+    minus
+};
+
+enum class AddingOperator {
+    plus,
+    minus,
+    ampersand
+};
+
+enum class SubprogramKind {
+    function,
+    procedure,
+};
+
+enum class FunctionType {
+    impure,
+    pure,
+};
+
+enum class MulOp {
+    // Multiplication
+    mul,
+    // Division
+    div,
+    // Modulo
+    mod,
+    // Reminder
+    rem
+};
 
 using AbstractLiteral = std::variant<
-    Lexer::DecimalLiteral,
-    Lexer::BasedLiteral>;
+    lexer::DecimalLiteral,
+    lexer::BasedLiteral>;
+
+using Identifier = std::variant<lexer::BasicIdentifier, lexer::ExtendedIdentifier>;
+
+using Name = std::variant<
+    std::unique_ptr<AttributeName>,
+    std::unique_ptr<IndexedName>,
+    std::unique_ptr<OperatorSymbol>,
+    std::unique_ptr<SelectedName>,
+    // Simple name
+    std::unique_ptr<Identifier>,
+    std::unique_ptr<SliceName>>;
 
 using ActualDesignator = std::variant<
+    Keyword::Open,
     gsl::not_null<std::unique_ptr<Expression>>,
     /**
      *  Name must be:
@@ -38,19 +285,373 @@ using ActualDesignator = std::variant<
      *      - signal_name
      *      - file_name
      */
-    gsl::not_null<std::unique_ptr<Name>>,
-    Keyword::Open>;
-
-struct ActualPart : AstNode {
-    // Name must be FUNCTION name or a TYPE mark
-    std::unique_ptr<Name> name; // optional
-    ActualDesignator actual_designator;
-};
+    Name>;
 
 using AliasDesignator = std::variant<
     std::unique_ptr<Identifier>,
-    std::unique_ptr<Lexer::CharacterLiteral>,
+    std::unique_ptr<lexer::CharacterLiteral>,
     std::unique_ptr<OperatorSymbol>>;
+
+using Allocator = std::variant<
+    std::unique_ptr<SubtypeIndication>,
+    std::unique_ptr<QualifiedExpression>>;
+
+using ArrayTypeDefinition = std::variant<
+    std::unique_ptr<UnconstrainedArrayDefinition>,
+    std::unique_ptr<ConstrainedArrayDefinition>>;
+
+using SubprogramSpecification = std::variant<
+    ProcedureSpecification,
+    FunctionSpecification>;
+
+using BlockDeclarativeItem = std::variant<
+    // subprogram_declaration
+    std::unique_ptr<SubprogramSpecification>,
+    std::unique_ptr<SubprogramBody>,
+    std::unique_ptr<TypeDeclaration>,
+    std::unique_ptr<SubtypeDeclaration>,
+    std::unique_ptr<ConstantDeclaration>,
+    std::unique_ptr<SignalDeclaration>,
+    std::unique_ptr<SharedVariableDeclaration>,
+    std::unique_ptr<FileDeclaration>,
+    std::unique_ptr<AliasDeclaration>,
+    std::unique_ptr<ComponentDeclaration>,
+    std::unique_ptr<AttributeDeclaration>,
+    std::unique_ptr<AttributeSpecification>,
+    std::unique_ptr<ConfigurationSpecification>,
+    std::unique_ptr<DisconnectionSpecification>,
+    std::unique_ptr<UseClause>,
+    std::unique_ptr<GroupTemplateDeclaration>,
+    std::unique_ptr<GroupDeclaration>>;
+
+// Must be an ATTRIBUTE name
+using Range = std::variant<Name, SimpleRange>;
+
+using DiscreteRange = std::variant<
+    std::unique_ptr<SubtypeIndication>,
+    std::unique_ptr<Range>>;
+
+using Choice = std::variant<
+    std::unique_ptr<SimpleExpression>,
+    std::unique_ptr<DiscreteRange>,
+    Keyword::Others>;
+
+using CompositeTypeDefinition = std::variant<
+    std::unique_ptr<ArrayTypeDefinition>,
+    std::unique_ptr<RecordTypeDefinition>>;
+
+using ConcurrentSignalAssignment = std::variant<
+    ConcurrentConditionalSignalAssignment,
+    ConcurrentSelectedSignalAssignment>;
+
+using ConcurrentStatement = std::variant<
+    std::unique_ptr<BlockStatement>,
+    std::unique_ptr<ProcessStatement>,
+    std::unique_ptr<ConcurrentProcedureCall>,
+    std::unique_ptr<ConcurrentAssertion>,
+    std::unique_ptr<ConcurrentSignalAssignment>,
+    std::unique_ptr<ComponentInstantiation>,
+    std::unique_ptr<GenerateStatement>>;
+
+using ConfigurationDeclarativeItem = std::variant<
+    UseClause,
+    AttributeSpecification,
+    GroupDeclaration>;
+
+using ConfigurationItem = std::variant<BlockConfiguration, ComponentConfiguration>;
+
+using Constraint = std::variant<Range, IndexConstraint>;
+
+using ContextItem = std::variant<LibraryClause, UseClause>;
+
+using DelayMechanism = std::variant<
+    Keyword::Transport,
+    Keyword::Inertial,
+    // SYNTAX: REJECT time_expression INERTIAL
+    std::unique_ptr<Expression>>;
+
+using Designator = std::variant<Identifier, OperatorSymbol>;
+
+using ElementAssociation = std::variant<std::unique_ptr<Expression>, ChoicesExpression>;
+
+// FIXME: Fix
+using EntityAspect = std::variant<
+    EntityName,
+    ConfigurationName,
+    Keyword::Open>;
+
+using EntityDeclarativeItem = std::variant<
+    SubprogramSpecification,
+    SubprogramBody,
+    TypeDeclaration,
+    SubtypeDeclaration,
+    ConstantDeclaration,
+    SignalDeclaration,
+    SharedVariableDeclaration,
+    FileDeclaration,
+    AliasDeclaration,
+    AttributeDeclaration,
+    AttributeSpecification,
+    DisconnectionSpecification,
+    UseClause,
+    GroupTemplateDeclaration,
+    GroupDeclaration>;
+
+using EntityNameList = std::variant<
+    std::vector<EntityDesignator>,
+    Keyword::Others,
+    Keyword::All>;
+
+using EntityStatement = std::variant<
+    ConcurrentAssertion,
+    // Must be a passive procedure call
+    ConcurrentProcedureCall,
+    // Must be a passive process
+    ProcessStatement>;
+
+using EntityTag = std::variant<
+    // simple_name
+    Identifier,
+    lexer::CharacterLiteral,
+    OperatorSymbol>;
+
+using EnumerationLiteral = std::variant<Identifier, lexer::CharacterLiteral>;
+
+using SimplePrefix = std::variant<
+    std::unique_ptr<ExpandedSelectedName>,
+    // simple_name
+    Identifier>;
+
+using GenerationScheme = std::variant<
+    // FOR generation scheme
+    // Must be a GENERATION parameter specification
+    ParameterSpecification,
+    // IF generation scheme
+    // Must be a boolean expression
+    std::unique_ptr<Expression>>;
+
+using GroupConstituent = std::variant<lexer::CharacterLiteral, Name>;
+
+using SequentialStatement = std::variant<
+    WaitStatement,
+    AssertionStatement,
+    ReportStatement,
+    SignalAssignmentStatement,
+    VariableAssignmentStatement,
+    ProcedureCallStatement,
+    IfStatement,
+    CaseStatement,
+    LoopStatement,
+    NextStatement,
+    ExitStatement,
+    ReturnStatement,
+    NullStatement>;
+
+using IfStatementPair = std::pair<
+    // Must be a boolean condition
+    std::unique_ptr<Expression>,
+    std::vector<SequentialStatement>>;
+
+using IndexSpecification = std::variant<
+    DiscreteRange,
+    // Must be a static expression
+    std::unique_ptr<Expression>>;
+
+using InstantiatedUnit = std::variant<ComponentUnit, EntityUnit, ConfigurationUnit>;
+
+// FIXME: Correctly redefine
+using InstantiationList = std::variant<
+    // Must be a list of component instance labels
+    std::vector<Identifier>,
+    Keyword::Others,
+    Keyword::All>;
+
+using InterfaceDeclaration = std::variant<
+    InterfaceUnresolvedDeclaration,
+    InterfaceConstantDeclaration,
+    InterfaceSignalDeclaration,
+    InterfaceVariableDeclaration,
+    InterfaceFileDeclaration>;
+
+using IterationScheme = std::variant<
+    // WHILE condition
+    // Must be a boolean expression (i.e., a condition)
+    std::unique_ptr<Expression>,
+    // FOR condition
+    // Must be a LOOP parameter specification
+    std::unique_ptr<ParameterSpecification>>;
+
+using PrimaryUnit = std::variant<
+    EntityDeclaration,
+    ConfigurationDeclaration,
+    PackageDeclaration>;
+
+using SecondaryUnit = std::variant<
+    ArchitectureBody,
+    PackageBody>;
+
+using LibraryUnit = std::variant<PrimaryUnit, SecondaryUnit>;
+
+using NumericLiteral = std::variant<AbstractLiteral, PhysicalLiteral>;
+
+using Literal = std::variant<
+    NumericLiteral,
+    EnumerationLiteral,
+    lexer::StringLiteral,
+    lexer::BitStringLiteral,
+    Keyword::Null>;
+
+using PackageBodyDeclarativeItem = std::variant<
+    AliasDeclaration,
+    ConstantDeclaration,
+    FileDeclaration,
+    GroupDeclaration,
+    GroupTemplateDeclaration,
+    SharedVariableDeclaration,
+    SubprogramBody,
+    // subprogram declaration
+    SubprogramSpecification,
+    SubtypeDeclaration,
+    TypeDeclaration,
+    UseClause>;
+
+using PackageDeclarativeItem = std::variant<
+    AliasDeclaration,
+    AttributeDeclaration,
+    AttributeSpecification,
+    ComponentDeclaration,
+    ConstantDeclaration,
+    DisconnectionSpecification,
+    FileDeclaration,
+    GroupDeclaration,
+    GroupTemplateDeclaration,
+    SharedVariableDeclaration,
+    SignalDeclaration,
+    // subprogram declaration
+    SubprogramSpecification,
+    SubtypeDeclaration,
+    TypeDeclaration,
+    UseClause>;
+
+using Prefix = std::variant<Name, FunctionCall>;
+
+using Aggregate = std::vector<ElementAssociation>;
+
+using Primary = std::variant<
+    std::unique_ptr<Name>,
+    std::unique_ptr<Literal>,
+    std::unique_ptr<Aggregate>,
+    std::unique_ptr<FunctionCall>,
+    std::unique_ptr<QualifiedExpression>,
+    std::unique_ptr<TypeConversion>,
+    std::unique_ptr<Allocator>,
+    std::unique_ptr<Expression>>;
+
+using VariableDeclaration = std::variant<
+    PlainVariableDeclaration,
+    SharedVariableDeclaration>;
+
+using ProcessDeclarativeItem = std::variant<
+    AliasDeclaration,
+    AttributeDeclaration,
+    AttributeSpecification,
+    ConstantDeclaration,
+    FileDeclaration,
+    GroupDeclaration,
+    GroupTemplateDeclaration,
+    SubprogramBody,
+    // subprogram declaratin
+    SubprogramSpecification,
+    SubtypeDeclaration,
+    TypeDeclaration,
+    UseClause,
+    VariableDeclaration>;
+
+using ProtectedTypeBodyDeclarativeItem = std::variant<
+    AliasDeclaration,
+    AttributeDeclaration,
+    AttributeSpecification,
+    ConstantDeclaration,
+    FileDeclaration,
+    GroupDeclaration,
+    GroupTemplateDeclaration,
+    SubprogramBody,
+    // subprogram declaration
+    SubprogramSpecification,
+    SubtypeDeclaration,
+    TypeDeclaration,
+    UseClause,
+    VariableDeclaration>;
+
+using ProtectedTypeDeclarativeItem = std::variant<
+    SubprogramSpecification,
+    AttributeSpecification,
+    UseClause>;
+
+using ProtectedTypeDefinition = std::variant<
+    ProtectedTypeDeclaration,
+    ProtectedTypeBody>;
+
+using ScalarTypeDefinition = std::variant<
+    EnumerationTypeDefinition,
+    // range constraint
+    Range,
+    PhysicalTypeDefinition>;
+
+// FIXME: Fix
+using SignalList = std::variant<
+    // Names must be SIGNAL names
+    std::vector<std::unique_ptr<Name>>,
+    Keyword::Others,
+    Keyword::All>;
+
+using TermOpPair = std::pair<AddingOperator, std::unique_ptr<Term>>;
+
+using SubprogramDeclarativeItem = std::variant<
+    // subprogram declaration
+    SubprogramSpecification,
+    SubprogramBody,
+    TypeDeclaration,
+    SubtypeDeclaration,
+    ConstantDeclaration,
+    VariableDeclaration,
+    FileDeclaration,
+    AliasDeclaration,
+    AttributeDeclaration,
+    AttributeSpecification,
+    UseClause,
+    GroupTemplateDeclaration,
+    GroupDeclaration>;
+
+using Suffix = std::variant<
+    // TODO: Must be a simple name?
+    Identifier,
+    lexer::CharacterLiteral,
+    OperatorSymbol,
+    Keyword::All>;
+
+using Target = std::variant<Name, Aggregate>;
+
+using TypeDefinition = std::variant<
+    ScalarTypeDefinition,
+    CompositeTypeDefinition,
+    AccessTypeDefinition,
+    FileTypeDefinition,
+    ProtectedTypeDefinition>;
+
+using WaveformElement = std::variant<
+    WaveformElementKind::ValueExpression,
+    WaveformElementKind::NullExpression>;
+
+using Waveform = std::variant<
+    std::vector<WaveformElement>,
+    Keyword::Unaffected>;
+
+struct ActualPart : AstNode {
+    // Name must be FUNCTION name or a TYPE mark
+    std::optional<Name> name; // optional
+    ActualDesignator actual_designator;
+};
 
 struct AliasDeclaration : AstNode {
     std::unique_ptr<AliasDesignator> alias_designator;
@@ -65,10 +666,6 @@ struct AccessTypeDefinition : AstNode {
     std::unique_ptr<SubtypeIndication> subtype;
 };
 
-using Allocator = std::variant<
-    std::unique_ptr<SubtypeIndication>,
-    std::unique_ptr<QualifiedExpression>>;
-
 struct ArchitectureBody : AstNode {
     std::unique_ptr<Identifier> identifier;
     // Name must be an entity name
@@ -77,10 +674,6 @@ struct ArchitectureBody : AstNode {
     std::optional<std::vector<ConcurrentStatement>> statement_part;
     std::optional<std::unique_ptr<Identifier>> end_label;
 };
-
-using ArrayTypeDefinition = std::variant<
-    std::unique_ptr<UnconstrainedArrayDefinition>,
-    std::unique_ptr<ConstrainedArrayDefinition>>;
 
 struct UnconstrainedArrayDefinition : AstNode {
     std::unique_ptr<SubtypeIndication> subtype;
@@ -145,26 +738,6 @@ struct BlockConfiguration : AstNode {
     std::vector<ConfigurationItem> configuration_items; // Optional
 };
 
-using BlockDeclarativeItem = std::variant<
-    // subprogram_declaration
-    std::unique_ptr<SubprogramSpecification>,
-    std::unique_ptr<SubprogramBody>,
-    std::unique_ptr<TypeDeclaration>,
-    std::unique_ptr<SubtypeDeclaration>,
-    std::unique_ptr<ConstantDeclaration>,
-    std::unique_ptr<SignalDeclaration>,
-    std::unique_ptr<SharedVariableDeclaration>,
-    std::unique_ptr<FileDeclaration>,
-    std::unique_ptr<AliasDeclaration>,
-    std::unique_ptr<ComponentDeclaration>,
-    std::unique_ptr<AttributeDeclaration>,
-    std::unique_ptr<AttributeSpecification>,
-    std::unique_ptr<ConfigurationSpecification>,
-    std::unique_ptr<DisconnectionSpecification>,
-    std::unique_ptr<UseClause>,
-    std::unique_ptr<GroupTemplateDeclaration>,
-    std::unique_ptr<GroupDeclaration>>;
-
 struct BlockHeaderGenericClause : AstNode {
     std::unique_ptr<GenericClause> generic_clause; // Optional
     std::unique_ptr<GenericMapAspect> generic_map_aspect; // Optional
@@ -216,11 +789,6 @@ struct CaseAlternative : AstNode {
     std::vector<SequentialStatement> sequential_statements; // Optional
 };
 
-using Choice = std::variant<
-    std::unique_ptr<SimpleExpression>,
-    std::unique_ptr<DiscreteRange>,
-    Keyword::Others>;
-
 struct ComponentConfiguration : AstNode {
     std::unique_ptr<ComponentSpecification> component_specification;
     std::optional<BindingIndication> binding_indication; // Optional
@@ -250,10 +818,6 @@ struct ComponentSpecification : AstNode {
     Name name;
 };
 
-using CompositeTypeDefinition = std::variant<
-    std::unique_ptr<ArrayTypeDefinition>,
-    std::unique_ptr<RecordTypeDefinition>>;
-
 struct ConcurrentAssertion : Assertion {
     std::optional<Identifier> label; // Optional
     bool is_postponed { false };
@@ -264,10 +828,6 @@ struct ConcurrentProcedureCall : ProcedureCall {
     bool is_postponed { false };
 };
 
-using ConcurrentSignalAssignment = std::variant<
-    ConcurrentConditionalSignalAssignment,
-    ConcurrentSelectedSignalAssignment>;
-
 struct ConcurrentConditionalSignalAssignment : ConditionalSignalAssignment {
     std::optional<Identifier> label;
     bool is_postponed { false };
@@ -277,15 +837,6 @@ struct ConcurrentSelectedSignalAssignment : SelectedSignalAssignment {
     std::optional<Identifier> label;
     bool is_postponed { false };
 };
-
-using ConcurrentStatement = std::variant<
-    std::unique_ptr<BlockStatement>,
-    std::unique_ptr<ProcessStatement>,
-    std::unique_ptr<ConcurrentProcedureCall>,
-    std::unique_ptr<ConcurrentAssertion>,
-    std::unique_ptr<ConcurrentSignalAssignment>,
-    std::unique_ptr<ComponentInstantiation>,
-    std::unique_ptr<GenerateStatement>>;
 
 struct ConditionClause : AstNode {
     // Condition must be a boolean expression
@@ -320,13 +871,6 @@ struct ConfigurationDeclaration : AstNode {
     std::optional<Identifier> block_simple_name_label; // Optional
 };
 
-using ConfigurationDeclarativeItem = std::variant<
-    UseClause,
-    AttributeSpecification,
-    GroupDeclaration>;
-
-using ConfigurationItem = std::variant<BlockConfiguration, ComponentConfiguration>;
-
 struct ConfigurationSpecification : AstNode {
     std::unique_ptr<ComponentSpecification> component_specification;
     std::unique_ptr<BindingIndication> binding_indication;
@@ -338,16 +882,6 @@ struct ConstantDeclaration : AstNode {
     std::unique_ptr<Expression> init_expression; // Optional
 };
 
-using Constraint = std::variant<Range, IndexConstraint>;
-
-using ContextItem = std::variant<LibraryClause, UseClause>;
-
-using DelayMechanism = std::variant<
-    Keyword::Transport,
-    Keyword::Inertial,
-    // SYNTAX: REJECT time_expression INERTIAL
-    std::unique_ptr<Expression>>;
-
 struct DesignFile : AstNode {
     std::vector<DesignUnit> design_units;
 };
@@ -357,25 +891,17 @@ struct DesignUnit : AstNode {
     LibraryUnit library_unit;
 };
 
-using Designator = std::variant<Identifier, OperatorSymbol>;
-
 struct DisconnectionSpecification : AstNode {
     GuardedSignalSpecification guarded_signal_specification;
     // Expression must have a result of type TIME
     std::unique_ptr<Expression> time_expression;
 };
 
-using DiscreteRange = std::variant<
-    std::unique_ptr<SubtypeIndication>,
-    std::unique_ptr<Range>>;
-
 // Element association
 struct ChoicesExpression : AstNode {
     std::vector<Choice> choices;
     std::unique_ptr<Expression> expression;
 };
-
-using ElementAssociation = std::variant<std::unique_ptr<Expression>, ChoicesExpression>;
 
 struct ElementDeclaration : AstNode {
     std::vector<Identifier> identifier_list;
@@ -394,37 +920,13 @@ struct ConfigurationName : AstNode {
     Name name;
 };
 
-// FIXME: Fix
-using EntityAspect = std::variant<
-    EntityName,
-    ConfigurationName,
-    Keyword::Open>;
-
-enum class EntityClass {
-    architecture,
-    component,
-    configuration,
-    constant,
-    entity,
-    function,
-    label,
-    literal,
-    package,
-    procedure,
-    signal,
-    subtype,
-    type,
-    units,
-    variable
-};
-
 struct EntityClassEntry : AstNode {
     EntityClass entity_class;
     // TODO: Better semantic name
     bool has_box;
 };
 
-class EntityDeclaration : AstNode {
+struct EntityDeclaration : AstNode {
     Identifier identifier;
     std::optional<EntityHeader> entity_header;
     std::vector<EntityDeclarativeItem> declarative_items; // Optional
@@ -433,57 +935,20 @@ class EntityDeclaration : AstNode {
     std::optional<Identifier> block_simple_name;
 };
 
-using EntityDeclarativeItem = std::variant<
-    SubprogramSpecification,
-    SubprogramBody,
-    TypeDeclaration,
-    SubtypeDeclaration,
-    ConstantDeclaration,
-    SignalDeclaration,
-    SharedVariableDeclaration,
-    FileDeclaration,
-    AliasDeclaration,
-    AttributeDeclaration,
-    AttributeSpecification,
-    DisconnectionSpecification,
-    UseClause,
-    GroupTemplateDeclaration,
-    GroupDeclaration>;
-
 struct EntityDesignator : AstNode {
     EntityTag entity_tag;
     std::optional<Signature> signature;
 };
 
-class EntityHeader : AstNode {
+struct EntityHeader : AstNode {
     std::unique_ptr<GenericClause> generic_clause; // Optional
     std::unique_ptr<PortClause> port_clause; // Optional
 };
-
-using EntityNameList = std::variant<
-    std::vector<EntityDesignator>,
-    Keyword::Others,
-    Keyword::All>;
 
 struct EntitySpecification : AstNode {
     EntityNameList entity_name_list;
     EntityClass entity_class;
 };
-
-using EntityStatement = std::variant<
-    ConcurrentAssertion,
-    // Must be a passive procedure call
-    ConcurrentProcedureCall,
-    // Must be a passive process
-    ProcessStatement>;
-
-using EntityTag = std::variant<
-    // simple_name
-    Identifier,
-    Lexer::CharacterLiteral,
-    OperatorSymbol>;
-
-using EnumerationLiteral = std::variant<Identifier, Lexer::CharacterLiteral>;
 
 struct EnumerationTypeDefinition : AstNode {
     std::vector<EnumerationLiteral> enumeration_literals;
@@ -502,34 +967,11 @@ struct ExpandedSelectedName : AstNode {
     Suffix suffix;
 };
 
-using SimplePrefix = std::variant<
-    std::unique_ptr<ExpandedSelectedName>,
-    // simple_name
-    Identifier>;
-
-enum class RelationKind {
-    AND,
-    OR,
-    XOR,
-    nand,
-    nor,
-    xnor,
-};
-
 struct Expression : AstNode {
     std::vector<Relation> relations;
 
     // Assert: (relations.size() == 1) implies (kind == RelationKind::NONE)
     RelationKind kind;
-};
-
-enum class FactorKind {
-    exp,
-    abs,
-    NOT,
-
-    // No operator, just a single primary
-    NONE
 };
 
 struct Factor : AstNode {
@@ -594,14 +1036,6 @@ struct GenerateStatement : AstNode {
     std::optional<Identifier> end_label; // Optional
 };
 
-using GenerationScheme = std::variant<
-    // FOR generation scheme
-    // Must be a GENERATION parameter specification
-    ParameterSpecification,
-    // IF generation scheme
-    // Must be a boolean expression
-    std::unique_ptr<Expression>>;
-
 struct GenericClause : AstNode {
     std::vector<InterfaceConstantDeclaration> generic_list;
 };
@@ -610,8 +1044,6 @@ struct GenericMapAspect : AstNode {
     // Must be a GENERIC association list
     std::vector<AssociationElement> association_list;
 };
-
-using GroupConstituent = std::variant<Lexer::CharacterLiteral, Name>;
 
 struct GroupDeclaration : AstNode {
     Identifier identifier;
@@ -631,13 +1063,6 @@ struct GuardedSignalSpecification : AstNode {
     Name type_mark;
 };
 
-using Identifier = std::variant<Lexer::BasicIdentifier, Lexer::ExtendedIdentifier>;
-
-using IfStatementPair = std::pair<
-    // Must be a boolean condition
-    std::unique_ptr<Expression>,
-    std::vector<SequentialStatement>>;
-
 struct IfStatement : AstNode {
     std::optional<Identifier> label; // Optional
     std::vector<IfStatementPair> if_statements;
@@ -649,11 +1074,6 @@ struct IfStatement : AstNode {
 struct IndexConstraint : AstNode {
     std::vector<DiscreteRange> discrete_ranges;
 };
-
-using IndexSpecification = std::variant<
-    DiscreteRange,
-    // Must be a static expression
-    std::unique_ptr<Expression>>;
 
 struct IndexedName : AstNode {
     Prefix prefix;
@@ -677,15 +1097,6 @@ struct ConfigurationUnit : AstNode {
     Name configuration_name;
 };
 
-using InstantiatedUnit = std::variant<ComponentUnit, EntityUnit, ConfigurationUnit>;
-
-// FIXME: Correctly redefine
-using InstantiationList = std::variant<
-    // Must be a list of component instance labels
-    std::vector<Identifier>,
-    Keyword::Others,
-    Keyword::All>;
-
 struct InterfaceConstantDeclaration : AstNode {
     std::vector<Identifier> identifier_list;
     std::unique_ptr<SubtypeIndication> subtype_indication;
@@ -693,24 +1104,9 @@ struct InterfaceConstantDeclaration : AstNode {
     std::optional<Expression> init_expression; // Optional
 };
 
-using InterfaceDeclaration = std::variant<
-    InterfaceUnresolvedDeclaration,
-    InterfaceConstantDeclaration,
-    InterfaceSignalDeclaration,
-    InterfaceVariableDeclaration,
-    InterfaceFileDeclaration>;
-
 struct InterfaceFileDeclaration : AstNode {
     std::vector<Identifier> identifier_list;
     std::unique_ptr<SubtypeIndication> subtype_indication;
-};
-
-enum class Mode {
-    in,
-    out,
-    inout,
-    buffer,
-    linkage
 };
 
 struct InterfaceSignalDeclaration : AstNode {
@@ -739,26 +1135,9 @@ struct InterfaceVariableDeclaration : AstNode {
     std::optional<Expression> init_expression;
 };
 
-using IterationScheme = std::variant<
-    // WHILE condition
-    // Must be a boolean expression (i.e., a condition)
-    std::unique_ptr<Expression>,
-    // FOR condition
-    // Must be a LOOP parameter specification
-    std::unique_ptr<ParameterSpecification>>;
-
 struct LibraryClause : AstNode {
     std::vector<Identifier> logical_name_list;
 };
-
-using LibraryUnit = std::variant<PrimaryUnit, SecondaryUnit>;
-
-using Literal = std::variant<
-    NumericLiteral,
-    EnumerationLiteral,
-    Lexer::StringLiteral,
-    Lexer::BitStringLiteral,
-    Keyword::Null>;
 
 struct LoopStatement : AstNode {
     std::optional<Identifier> label;
@@ -767,15 +1146,6 @@ struct LoopStatement : AstNode {
     // Optional
     std::optional<Identifier> end_label;
 };
-
-using Name = std::variant<
-    std::unique_ptr<AttributeName>,
-    std::unique_ptr<IndexedName>,
-    std::unique_ptr<OperatorSymbol>,
-    std::unique_ptr<SelectedName>,
-    // Simple name
-    std::unique_ptr<Identifier>,
-    std::unique_ptr<SliceName>>;
 
 struct NextStatement : AstNode {
     std::optional<Identifier> statement_label;
@@ -788,10 +1158,8 @@ struct NullStatement : AstNode {
     std::optional<Identifier> label; // Optional
 };
 
-using NumericLiteral = std::variant<AbstractLiteral, PhysicalLiteral>;
-
 struct OperatorSymbol : AstNode {
-    Lexer::StringLiteral operator_symbol;
+    lexer::StringLiteral operator_symbol;
 };
 
 struct Options : AstNode {
@@ -806,44 +1174,12 @@ struct PackageBody : AstNode {
     std::optional<Identifier> simple_name_opt;
 };
 
-using PackageBodyDeclarativeItem = std::variant<
-    AliasDeclaration,
-    ConstantDeclaration,
-    FileDeclaration,
-    GroupDeclaration,
-    GroupTemplateDeclaration,
-    SharedVariableDeclaration,
-    SubprogramBody,
-    // subprogram declaration
-    SubprogramSpecification,
-    SubtypeDeclaration,
-    TypeDeclaration,
-    UseClause>;
-
 struct PackageDeclaration : AstNode {
     Identifier identifier;
     std::vector<PackageDeclarativeItem> declarative_part;
     // Optional, should be equal to the "identifier" if used
     std::optional<Identifier> simple_name_opt;
 };
-
-using PackageDeclarativeItem = std::variant<
-    AliasDeclaration,
-    AttributeDeclaration,
-    AttributeSpecification,
-    ComponentDeclaration,
-    ConstantDeclaration,
-    DisconnectionSpecification,
-    FileDeclaration,
-    GroupDeclaration,
-    GroupTemplateDeclaration,
-    SharedVariableDeclaration,
-    SignalDeclaration,
-    // subprogram declaration
-    SubprogramSpecification,
-    SubtypeDeclaration,
-    TypeDeclaration,
-    UseClause>;
 
 struct ParameterSpecification : AstNode {
     Identifier identifier;
@@ -871,23 +1207,6 @@ struct PortMapAspect : AstNode {
     std::vector<AssociationElement> association_list;
 };
 
-using Prefix = std::variant<Name, FunctionCall>;
-
-using Primary = std::variant<
-    std::unique_ptr<Name>,
-    std::unique_ptr<Literal>,
-    std::unique_ptr<Aggregate>,
-    std::unique_ptr<FunctionCall>,
-    std::unique_ptr<QualifiedExpression>,
-    std::unique_ptr<TypeConversion>,
-    std::unique_ptr<Allocator>,
-    std::unique_ptr<Expression>>;
-
-using PrimaryUnit = std::variant<
-    EntityDeclaration,
-    ConfigurationDeclaration,
-    PackageDeclaration>;
-
 struct ProcedureCall : AstNode {
     Name procedure_name;
     // Must be a PARAMETER association list
@@ -897,22 +1216,6 @@ struct ProcedureCall : AstNode {
 struct ProcedureCallStatement : ProcedureCall {
     std::optional<Identifier> label;
 };
-
-using ProcessDeclarativeItem = std::variant<
-    AliasDeclaration,
-    AttributeDeclaration,
-    AttributeSpecification,
-    ConstantDeclaration,
-    FileDeclaration,
-    GroupDeclaration,
-    GroupTemplateDeclaration,
-    SubprogramBody,
-    // subprogram declaratin
-    SubprogramSpecification,
-    SubtypeDeclaration,
-    TypeDeclaration,
-    UseClause,
-    VariableDeclaration>;
 
 struct ProcessStatement : AstNode {
     std::optional<Identifier> label;
@@ -933,35 +1236,10 @@ struct ProtectedTypeBody : AstNode {
     std::optional<Identifier> simple_name_opt;
 };
 
-using ProtectedTypeBodyDeclarativeItem = std::variant<
-    AliasDeclaration,
-    AttributeDeclaration,
-    AttributeSpecification,
-    ConstantDeclaration,
-    FileDeclaration,
-    GroupDeclaration,
-    GroupTemplateDeclaration,
-    SubprogramBody,
-    // subprogram declaration
-    SubprogramSpecification,
-    SubtypeDeclaration,
-    TypeDeclaration,
-    UseClause,
-    VariableDeclaration>;
-
 struct ProtectedTypeDeclaration : AstNode {
     std::vector<ProtectedTypeDeclarativeItem> declarative_items;
     std::optional<Identifier> simple_name_opt;
 };
-
-using ProtectedTypeDeclarativeItem = std::variant<
-    SubprogramSpecification,
-    AttributeSpecification,
-    UseClause>;
-
-using ProtectedTypeDefinition = std::variant<
-    ProtectedTypeDeclaration,
-    ProtectedTypeBody>;
 
 struct QualifiedExpression : AstNode {
     Name type_mark;
@@ -969,19 +1247,11 @@ struct QualifiedExpression : AstNode {
     std::optional<std::unique_ptr<Aggregate>> aggregate;
 };
 
-enum class Direction {
-    to,
-    downto
-};
-
 struct SimpleRange : AstNode {
     std::unique_ptr<SimpleExpression> simple_expression;
     Direction direction;
     std::unique_ptr<SimpleExpression> simple_expression;
 };
-
-// Must be an ATTRIBUTE name
-using Range = std::variant<Name, SimpleRange>;
 
 struct RecordTypeDefinition : AstNode {
     std::vector<ElementDeclaration> element_declaration_list;
@@ -994,15 +1264,6 @@ struct Relation : AstNode {
     std::optional<std::unique_ptr<ShiftExpression>> right_shift_expression { std::nullopt };
 };
 
-enum class RelOp {
-    eq,
-    neq,
-    lt,
-    lte,
-    gt,
-    gte
-};
-
 struct ReportStatement : AstNode {
     std::optional<Identifier> label;
     Expression report_expression;
@@ -1013,16 +1274,6 @@ struct ReturnStatement : AstNode {
     std::optional<Identifier> label { std::nullopt };
     std::optional<Expression> return_expression { std::nullopt };
 };
-
-using ScalarTypeDefinition = std::variant<
-    EnumerationTypeDefinition,
-    // range constraint
-    Range,
-    PhysicalTypeDefinition>;
-
-using SecondaryUnit = std::variant<
-    ArchitectureBody,
-    PackageBody>;
 
 struct SecondaryUnitDeclaration : AstNode {
     Identifier identifier;
@@ -1047,39 +1298,10 @@ struct SelectedWaveform : AstNode {
     std::vector<Choice> choices;
 };
 
-using SequentialStatement = std::variant<
-    WaitStatement,
-    AssertionStatement,
-    ReportStatement,
-    SignalAssignmentStatement,
-    VariableAssignmentStatement,
-    ProcedureCallStatement,
-    IfStatement,
-    CaseStatement,
-    LoopStatement,
-    NextStatement,
-    ExitStatement,
-    ReturnStatement,
-    NullStatement>;
-
 struct ShiftExpression : AstNode {
     std::unique_ptr<SimpleExpression> left_expression;
     std::optional<ShiftOperator> shift_operator { std::nullopt };
     std::optional<std::unique_ptr<SimpleExpression>> right_expression { std::nullopt };
-};
-
-enum class ShiftOperator {
-    sll,
-    srl,
-    sla,
-    sra,
-    rol,
-    ror
-};
-
-enum class Sign {
-    plus,
-    minus
 };
 
 struct SignalAssignmentStatement : AstNode {
@@ -1097,37 +1319,12 @@ struct SignalDeclaration : AstNode {
     std::optional<Expression> init_expression;
 };
 
-enum class SignalKind {
-    reg,
-    bus
-};
-
-// FIXME: Fix
-using SignalList = std::variant<
-    // Names must be SIGNAL names
-    std::vector<std::unique_ptr<Name>>,
-    Keyword::Others,
-    Keyword::All>;
-
 struct Signature : AstNode {
     // Name must be a type mark
     std::optional<std::vector<Name>> type_marks;
     // Name must be a type mark
     std::optional<Name> return_type_mark;
 };
-
-enum class Sign {
-    plus,
-    minus
-};
-
-enum class AddingOperator {
-    plus,
-    minus,
-    ampersand
-};
-
-using TermOpPair = std::pair<AddingOperator, std::unique_ptr<Term>>;
 
 struct SimpleExpression : AstNode {
     std::optional<Sign> sign;
@@ -1149,36 +1346,10 @@ struct SubprogramBody : AstNode {
     std::optional<Designator> designator;
 };
 
-using SubprogramDeclarativeItem = std::variant<
-    // subprogram declaration
-    SubprogramSpecification,
-    SubprogramBody,
-    TypeDeclaration,
-    SubtypeDeclaration,
-    ConstantDeclaration,
-    VariableDeclaration,
-    FileDeclaration,
-    AliasDeclaration,
-    AttributeDeclaration,
-    AttributeSpecification,
-    UseClause,
-    GroupTemplateDeclaration,
-    GroupDeclaration>;
-
-enum class SubprogramKind {
-    function,
-    procedure,
-};
-
 struct ProcedureSpecification : AstNode {
     Designator designator;
     // Must be a parameter interface list
     std::optional<std::vector<InterfaceDeclaration>> formal_parameter_list { std::nullopt };
-};
-
-enum class FunctionType {
-    impure,
-    pure,
 };
 
 struct FunctionSpecification : AstNode {
@@ -1188,10 +1359,6 @@ struct FunctionSpecification : AstNode {
     // Name must be a TYPE or a SUBTYPE name
     Name return_type;
 };
-
-using SubprogramSpecification = std::variant<
-    ProcedureSpecification,
-    FunctionSpecification>;
 
 struct SubtypeDeclaration : AstNode {
     Identifier identifier;
@@ -1207,28 +1374,6 @@ struct SubtypeIndication : AstNode {
     std::optional<Constraint> constraint;
 };
 
-using Suffix = std::variant<
-    // TODO: Must be a simple name?
-    Identifier,
-    Lexer::CharacterLiteral,
-    OperatorSymbol,
-    Keyword::All>;
-
-using Aggregate = std::vector<ElementAssociation>;
-
-using Target = std::variant<Name, Aggregate>;
-
-enum class MulOp {
-    // Multiplication
-    mul,
-    // Division
-    div,
-    // Modulo
-    mod,
-    // Reminder
-    rem
-};
-
 struct Term : AstNode {
     std::unique_ptr<Term> term; // Optional
     std::optional<MulOp> multiplying_operator;
@@ -1241,13 +1386,6 @@ struct TypeConversion : AstNode {
     Expression expression;
 };
 
-using TypeDefinition = std::variant<
-    ScalarTypeDefinition,
-    CompositeTypeDefinition,
-    AccessTypeDefinition,
-    FileTypeDefinition,
-    ProtectedTypeDefinition>;
-
 struct UseClause : AstNode {
     std::vector<ExpandedSelectedName> selected_name;
 };
@@ -1257,10 +1395,6 @@ struct VariableAssignmentStatement : AstNode {
     Target assignment_target;
     Expression expression;
 };
-
-using VariableDeclaration = std::variant<
-    PlainVariableDeclaration,
-    SharedVariableDeclaration>;
 
 struct PlainVariableDeclaration : AstNode {
     std::vector<Identifier> identifier_list;
@@ -1284,14 +1418,6 @@ struct WaitStatement : AstNode {
     std::optional<Expression> for_timeout_clause;
 };
 
-using Waveform = std::variant<
-    std::vector<WaveformElement>,
-    Keyword::Unaffected>;
-
-using WaveformElement = std::variant<
-    WaveformElementKind::ValueExpression,
-    WaveformElementKind::NullExpression>;
-
 namespace WaveformElementKind {
     struct ValueExpression : AstNode {
         // Expression must be a VALUE expression
@@ -1304,7 +1430,7 @@ namespace WaveformElementKind {
         // Expression must be a TIME expression
         std::optional<std::unique_ptr<Expression>> time_expression { std::nullopt };
     };
-}
+} // namespace WaveformElementKind
 
 } // namespace parser
 
