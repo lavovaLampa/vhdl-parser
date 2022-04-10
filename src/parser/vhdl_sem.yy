@@ -8,15 +8,35 @@
 %locations
 %debug
 
+// Use C++ variant type instead of union
 %define api.value.type variant
-%define api.namespace {Parser}
+// Generate detailed error messages
 %define parse.error detailed
+// Generate assertions to check proper usage of semantic values
+%define parse.assert
 
-%code top
+// Automatically move values in semantic values
+%define api.value.automove
+
+%define api.namespace {parser}
+%define api.parser.class {Parser}
+
+%define api.location.file "location.hpp"
+%define api.location.include {"parser/location.hpp"}
+
+/* %code top
 {
   #include "lexer_defs.h"
   #include "lexer.h"
   #include "parser_defs.h"
+} */
+
+%code requires
+{
+#include "lexer/lexer_defs.hpp"
+#include "parser/parser_defs.hpp"
+#include "lexer/lexer.hpp"
+#include <optional>
 }
 
 // TOKEN DEFINITIONS
@@ -130,13 +150,13 @@
 %token LT_OR_EQUAL          "<="
 %token BOX                  "<>"
 
-%token <Lexer::BasedLiteral>        BASED_LITERAL       "based literal"
-%token <Lexer::BasicIdentifier>     BASIC_IDENTIFIER    "basic identifier"
-%token <Lexer::BitStringLiteral>    BIT_STRING_LITERAL  "bit string literal"
-%token <Lexer::CharacterLiteral>    CHARACTER_LITERAL   "character literal"
-%token <Lexer::DecimalLiteral>      DECIMAL_LITERAL     "decimal literal"
-%token <Lexer::ExtendedIdentifier>  EXTENDED_IDENTIFIER "extended identifier"
-%token <Lexer::StringLiteral>       STRING_LITERAL      "string symbol"
+%token <lexer::BasedLiteral>        BASED_LITERAL       "based literal"
+%token <lexer::BasicIdentifier>     BASIC_IDENTIFIER    "basic identifier"
+%token <lexer::BitStringLiteral>    BIT_STRING_LITERAL  "bit string literal"
+%token <lexer::CharacterLiteral>    CHARACTER_LITERAL   "character literal"
+%token <lexer::DecimalLiteral>      DECIMAL_LITERAL     "decimal literal"
+%token <lexer::ExtendedIdentifier>  EXTENDED_IDENTIFIER "extended identifier"
+%token <lexer::StringLiteral>       STRING_LITERAL      "string symbol"
 
 %nterm <AbstractLiteral>                                    abstract_literal
 %nterm <AccessTypeDefinition>                               access_type_definition
@@ -235,9 +255,9 @@
 %nterm <std::vector<EntityStatement>>                       entity_declaration.entity_statement_part_opt
 %nterm <EntityDeclarativeItem>                              entity_declarative_item
 %nterm <std::vector<EntityDeclarativeItem>>                 entity_declarative_part
-%nterm <EntityDesginator>                                   entity_designator
+%nterm <EntityDesignator>                                   entity_designator
 %nterm <std::optional<EntityHeader>>                        entity_header
-%nterm <EntitynameList>                                     entity_name_list
+%nterm <EntityNameList>                                     entity_name_list
 %nterm <std::vector<EntityDesignator>>                      entity_name_list.entity_designator_mul
 %nterm <EntitySpecification>                                entity_specification
 %nterm <EntityStatement>                                    entity_statement
@@ -384,7 +404,7 @@
 %nterm <std::vector<SequentialStatement>>                   sequence_of_statements
 %nterm <SequentialStatement>                                sequential_statement
 %nterm <ShiftExpression>                                    shift_expression
-%nterm <ShiftOp>                                            shift_operator
+%nterm <ShiftOperator>                                      shift_operator
 %nterm <Sign>                                               sign
 %nterm <SignalAssignmentStatement>                          signal_assignment_statement
 %nterm <std::optional<DelayMechanism>>                      signal_assignment_statement.delay_mechanism_opt
@@ -424,7 +444,7 @@
 %nterm <UnconstrainedArrayDefinition>                       unconstrained_array_definition
 %nterm <UseClause>                                          use_clause
 %nterm <std::vector<ExpandedSelectedName>>                  use_clause.selected_name_mul
-%nterm <Expresion>                                          value_expression
+%nterm <Expression>                                         value_expression
 %nterm <VariableAssignmentStatement>                        variable_assignment_statement
 %nterm <VariableDeclaration>                                variable_declaration
 %nterm <PlainVariableDeclaration>                           plain_variable_declaration
@@ -449,7 +469,7 @@ abstract_literal:
   ;
 
 access_type_definition:
-    ACCESS subtype_indication { $$ = AccessTypeDefinition { $2 }; }
+    ACCESS subtype_indication { $$ = AccessTypeDefinition { {}, $2 }; }
   ;
 
 actual_designator:
@@ -465,9 +485,9 @@ actual_designator:
   ;
 
 actual_part:
-    actual_designator               { $$ = ActualPart { std::nullopt, $1 }; }
+    actual_designator               { $$ = ActualPart { {}, std::nullopt, $1 }; }
     // SEMANTIC: Name must be a function_name or a type_mark
-  | name '(' actual_designator ')'  { $$ = ActualPart { $1, $3 }; }
+  | name '(' actual_designator ')'  { $$ = ActualPart { {}, $1, $3 }; }
   ;
 
 adding_operator:
@@ -481,13 +501,13 @@ aggregate:
   ;
 
 aggregate.element_association_mul:
-    element_association                                         { $$ = Aggregate { $1 }; }
+    element_association                                         { $$ = Aggregate { {}, $1 }; }
   | aggregate.element_association_mul ',' element_association   { $1.push_back($3); $$ = $1; }
   ;
 
 alias_declaration:
     ALIAS alias_designator alias_declaration.opt_subtype        
-      IS name signature                                     { $$ = AliasDeclaration { $2, $3, $5, $6 }; }
+      IS name signature                                     { $$ = AliasDeclaration { {}, $2, $3, $5, $6 }; }
   ;
 
 alias_declaration.opt_subtype:
@@ -515,7 +535,7 @@ architecture_body:
     // SEMANTIC: "simple_name_opt" must be an ARCHITECTURE name
     // SEMANTIC: "simple_name_opt" == "identifier"
     END architecture_body.architecture_opt simple_name_opt ';'
-                              { $$ = ArchitectureBody { $2, $4, $6, $8, $11 }; }
+                              { $$ = ArchitectureBody { {}, $2, $4, $6, $8, $11 }; }
   ;
   
 architecture_body.architecture_opt:
@@ -540,7 +560,7 @@ array_type_definition:
 
 assertion:
     ASSERT condition assertion.report_opt assertion.severity_opt
-                                              { $$ = Assertion { $2, $3, $4 }; }
+                                              { $$ = Assertion { {}, $2, $3, $4 }; }
   ;
 
 assertion.report_opt:
@@ -554,12 +574,12 @@ assertion.severity_opt:
   ;
 
 assertion_statement:
-    label_colon_opt assertion ';' { $$ = AssertionStatement { $1, $2 }; }
+    label_colon_opt assertion ';' { $$ = AssertionStatement { {}, $1, $2 }; }
   ;
 
 association_element:
-    formal_part "=>" actual_part  { $$ = AssociationElement { $1, $3 }; }
-  | actual_part                   { $$ = AssociationElement { nullptr, $1 }; }
+    formal_part "=>" actual_part  { $$ = AssociationElement { {}, $1, $3 }; }
+  | actual_part                   { $$ = AssociationElement { {}, nullptr, $1 }; }
   ;
 
 association_list:
@@ -568,7 +588,7 @@ association_list:
   ;
 
 attribute_declaration:
-    ATTRIBUTE identifier ':' type_mark ';'    { $$ = AttributeDeclaration { $2, $4 }; }
+    ATTRIBUTE identifier ':' type_mark ';'    { $$ = AttributeDeclaration { {}, $2, $4 }; }
   ;
 
 attribute_designator:
@@ -578,7 +598,7 @@ attribute_designator:
 
 attribute_name:
     prefix signature '\'' attribute_designator attribute_name.expression_opt 
-              { $$ = AttributeName { $1, $2, $4, $5 }; }
+              { $$ = AttributeName { {}, $1, $2, $4, $5 }; }
   ;
 
 attribute_name.expression_opt:
@@ -588,14 +608,14 @@ attribute_name.expression_opt:
 
 attribute_specification:
     ATTRIBUTE attribute_designator OF entity_specification IS expression ';'
-              { $$ = AttributeSpecification { $2, $4, $6 }; }
+              { $$ = AttributeSpecification { {}, $2, $4, $6 }; }
   ;
 
 binding_indication:
     binding_indication.entity_aspect_opt
     generic_map_aspect_opt
     port_map_aspect_opt
-              { $$ = BindingIndication { $1, $2, $3 }; }
+              { $$ = BindingIndication { {}, $1, $2, $3 }; }
   ;
 
 binding_indication.entity_aspect_opt:
@@ -608,7 +628,7 @@ block_configuration:
       block_configuration.use_clause_mopt
       block_configuration.configuration_item_mopt
     END FOR ';'
-              { $$ = BlockConfiguration { $2, $3, $4 }; }
+              { $$ = BlockConfiguration { {}, $2, $3, $4 }; }
   ;
 
 block_configuration.use_clause_mopt:
@@ -647,20 +667,20 @@ block_declarative_part:
   ;
 
 block_header:
-    %empty                                                { $$ = BlockHeader { std::nullopt, std::nullopt }; }
-  | block_header.generic_clause                           { $$ = BlockHeader { $1, std::nullopt }; }
-  | block_header.port_clause                              { $$ = BlockHeader { std::nullopt, $1 }; }
-  | block_header.generic_clause block_header.port_clause  { $$ = BlockHeader { $1, $2 }; }
+    %empty                                                { $$ = BlockHeader { {}, std::nullopt, std::nullopt }; }
+  | block_header.generic_clause                           { $$ = BlockHeader { {}, $1, std::nullopt }; }
+  | block_header.port_clause                              { $$ = BlockHeader { {}, std::nullopt, $1 }; }
+  | block_header.generic_clause block_header.port_clause  { $$ = BlockHeader { {}, $1, $2 }; }
   ;
 
 block_header.generic_clause:
-    generic_clause                          { $$ = BlockHeaderGenericClause { $1, nullptr }; }
-  | generic_clause generic_map_aspect ';'   { $$ = BlockHeaderGenericClause { $1, $2 }; }
+    generic_clause                          { $$ = BlockHeaderGenericClause { {}, $1, nullptr }; }
+  | generic_clause generic_map_aspect ';'   { $$ = BlockHeaderGenericClause { {}, $1, $2 }; }
   ;
 
 block_header.port_clause:
-    port_clause                       { $$ = BlockHeaderPortClause { $1, nullptr }; }
-  | port_clause port_map_aspect ';'   { $$ = BlockHeaderPortClause { $1, $2 }; }
+    port_clause                       { $$ = BlockHeaderPortClause { {}, $1, nullptr }; }
+  | port_clause port_map_aspect ';'   { $$ = BlockHeaderPortClause { {}, $1, $2 }; }
   ;
 
 /* block_specification:
@@ -677,9 +697,9 @@ block_specification:
         - block_statement_label
         - generate_statement_label
     */
-    name                                { $$ = BlockSpecification { $1, std::nullopt }; }
+    name                                { $$ = BlockSpecification { {}, $1, std::nullopt }; }
     // Label must be a generate_statement_label
-  | label '(' index_specification ')'   { $$ = BlockSpecification { $1, $3 }; }
+  | label '(' index_specification ')'   { $$ = BlockSpecification { {}, $1, $3 }; }
   ;
 
 block_statement:
@@ -692,7 +712,7 @@ block_statement:
       // SEMANTIC: "label_opt" must a BLOCK label
       // SEMANTIC: "label_opt" == "label"
       END BLOCK label_opt ';'
-                  { $$ = BlockStatement { $1, $4, $6, $7, $9, $12 }; }
+                  { $$ = BlockStatement { {}, $1, $4, $6, $7, $9, $12 }; }
   ;
 
 block_statement.guard_expression_opt:
@@ -718,7 +738,7 @@ case_statement:
       // SEMANTIC: "label_opt" must be a CASE label
       // SEMANTIC: "label_opt" == "label_colon_opt"
       END CASE label_opt ';'
-                { $$ = CaseStatement { $1, $3, $5, $8 }; }
+                { $$ = CaseStatement { {}, $1, $3, $5, $8 }; }
   ;
 
 case_statement.case_statement_alternative_mul:
@@ -728,7 +748,7 @@ case_statement.case_statement_alternative_mul:
 
 case_statement_alternative:
     WHEN choices "=>" sequence_of_statements
-                { $$ = CaseAlternative { $2, $4 }; }
+                { $$ = CaseAlternative { {}, $2, $4 }; }
   ;
 
 choice:
@@ -750,7 +770,7 @@ component_configuration:
       component_configuration.binding_indication_opt
       component_configuration.block_configuration_opt
     END FOR ';'
-              { $$ = ComponentConfiguration { $2, $3, $4 }; }
+              { $$ = ComponentConfiguration { {}, $2, $3, $4 }; }
   ;
 
 component_configuration.binding_indication_opt:
@@ -770,7 +790,7 @@ component_declaration:
     // SEMANTIC: "simple_name_opt" must be a COMPONENT name
     // SEMANTIC: "simple_name_opt" == "identifier"
     END COMPONENT simple_name_opt ';'
-              { $$ = ComponentDeclaration { $2, $4, $5, $8 }; }
+              { $$ = ComponentDeclaration { {}, $2, $4, $5, $8 }; }
   ;
 
 component_declaration.local_generic_clause_opt:
@@ -790,12 +810,12 @@ component_instantiation_statement:
       instantiated_unit
         generic_map_aspect_opt
         port_map_aspect_opt ';'
-                { $$ = ComponentInstantiation { $1, $3, $4, $5 }; }
+                { $$ = ComponentInstantiation { {}, $1, $3, $4, $5 }; }
   ;
 
 component_specification:
     // SEMANTIC: "name" must be a COMPONENT name
-    instantiation_list ':' name   { $$ = ComponentSpecification { $1, $3 }; }
+    instantiation_list ':' name   { $$ = ComponentSpecification { {}, $1, $3 }; }
   ;
 
 composite_type_definition:
@@ -805,7 +825,7 @@ composite_type_definition:
 
 concurrent_assertion_statement:
     // FIXME: Correct initialization
-    label_colon_opt postponed_opt assertion ';' { $$ = ConcurrentAssertion { std::move($3), $1, $2 }; }
+    label_colon_opt postponed_opt assertion ';' { $$ = ConcurrentAssertion { {}, std::move($3), $1, $2 }; }
   ;
 
 label_colon_opt:
@@ -820,14 +840,14 @@ postponed_opt:
 
 concurrent_procedure_call_statement:
     label_colon_opt postponed_opt procedure_call ';'
-            { $$ = ConcurrentProcedureCall { std::move($3) , $1, $2 }; }
+            { $$ = ConcurrentProcedureCall { {}, std::move($3) , $1, $2 }; }
   ;
 
 concurrent_signal_assignment_statement:
     label_colon_opt postponed_opt conditional_signal_assignment
-            { $$ = ConcurrentConditionalSignalAssignment { std::move($3), $1, $2 }; }
+            { $$ = ConcurrentConditionalSignalAssignment { {}, std::move($3), $1, $2 }; }
   | label_colon_opt postponed_opt selected_signal_assignment
-            { $$ = ConcurrentSelectedSignalAssignment { std::move($3), $1, $2 }; }
+            { $$ = ConcurrentSelectedSignalAssignment { {}, std::move($3), $1, $2 }; }
   ;
 
 concurrent_statement:
@@ -846,25 +866,25 @@ condition:
   ;
 
 condition_clause:
-    UNTIL condition   { $$ = ConditionClause { $2 }; }
+    UNTIL condition   { $$ = ConditionClause { {}, $2 }; }
   ;
 
 conditional_signal_assignment:
     target "<=" options conditional_waveforms ';'
-              { $$ = ConditionalSignalAssignment { $1, $3, $4 }; }
+              { $$ = ConditionalSignalAssignment { {}, $1, $3, $4 }; }
   ;
 
 conditional_waveforms:
     conditional_waveforms.waveform_condition_mopt
       waveform conditional_waveforms.when_condition_opt
-              { $$ = ConditionalWaveforms { $1, $2, $3 }; }
+              { $$ = ConditionalWaveforms { {}, $1, $2, $3 }; }
   ;
 
 conditional_waveforms.waveform_condition_mopt:
     %empty
               { $$ = std::vector<ConditionalWaveform> {}; }
   | conditional_waveforms.waveform_condition_mopt waveform WHEN condition ELSE
-              { $1.emplace_back($2, $4); $$ = $1; }
+              { $1.emplace_back({}, $2, $4); $$ = $1; }
   ;
 
 conditional_waveforms.when_condition_opt:
@@ -880,7 +900,7 @@ configuration_declaration:
     // SEMANTIC: "simple_name_opt" must be a CONFIGURATION name
     // SEMANTIC: "simple_name_opt" == identifier
     END configuration_declaration.configuration_opt simple_name_opt ';'
-                { $$ = ConfigurationDeclaration { $2, $4, $6, $7, $10 }; }
+                { $$ = ConfigurationDeclaration { {}, $2, $4, $6, $7, $10 }; }
   ;
 
 configuration_declaration.configuration_opt:
@@ -908,13 +928,13 @@ configuration_item:
 
 configuration_specification:
     FOR component_specification binding_indication ';'
-                { $$ = ConfigurationSpecification { $2, $3 }; }
+                { $$ = ConfigurationSpecification { {}, $2, $3 }; }
   ;
 
 constant_declaration:
     CONSTANT identifier_list ':'
       subtype_indication constant_declaration.expression_opt ';'
-                { $$ = ConstantDeclaration { $2, $4, $5 }; }
+                { $$ = ConstantDeclaration { {}, $2, $4, $5 }; }
   ;
 
 constant_declaration.expression_opt:
@@ -925,7 +945,7 @@ constant_declaration.expression_opt:
 constrained_array_definition:
     // SEMANTIC: "subtype_indication" is an ELEMENT subtype indication
     ARRAY index_constraint OF subtype_indication
-                { $$ = ConstrainedArrayDefinition { $2, $4 }; }
+                { $$ = ConstrainedArrayDefinition { {}, $2, $4 }; }
   ;
 
 constraint:
@@ -939,7 +959,7 @@ constraint_opt:
   ;
 
 context_clause:
-    %empty                        { $$ = std::vector<ContexItem> {}; }
+    %empty                        { $$ = std::vector<ContextItem> {}; }
   | context_clause context_item   { $1.push_back($2); $$ = $1; }
   ;
 
@@ -960,7 +980,7 @@ design_file:
   ;
 
 design_unit:
-    context_clause library_unit   { $$ = DesignUnit { $1, $2 }; }
+    context_clause library_unit   { $$ = DesignUnit { {}, $1, $2 }; }
   ;
 
 designator:
@@ -980,7 +1000,7 @@ direction:
 
 disconnection_specification:
     DISCONNECT guarded_signal_specification AFTER time_expression ';'
-              { $$ = DisconnectionSpecification { $2, $4 }; }
+              { $$ = DisconnectionSpecification { {}, $2, $4 }; }
   ;
 
 discrete_range:
@@ -991,12 +1011,12 @@ discrete_range:
 
 element_association:
     expression
-  | choices "=>" expression   { $$ = ChoicesExpression { $1, $3 }; }
+  | choices "=>" expression   { $$ = ChoicesExpression { {}, $1, $3 }; }
   ;
 
 element_declaration:
     identifier_list ':' element_subtype_definition ';'
-              { $$ = ElementDeclaration { $1, $3 }; }
+              { $$ = ElementDeclaration { {}, $1, $3 }; }
   ;
 
 element_subtype_definition:
@@ -1005,12 +1025,12 @@ element_subtype_definition:
 
 entity_aspect:
     // SEMANTIC: "name" must be an ENTITY name
-    ENTITY name                       { $$ = EntityName { $2, std::nullopt }; }
+    ENTITY name                       { $$ = EntityName { {}, $2, std::nullopt }; }
     // SEMANTIC: "name" must be an ENTITY name
     // SEMANTIC: "identifier" must be an architecture identifier
-  | ENTITY name '(' identifier ')'    { $$ = EntityName { $2, $4 }; }
+  | ENTITY name '(' identifier ')'    { $$ = EntityName { {}, $2, $4 }; }
     // SEMANTIC: "name" must be a CONFIGURATION name
-  | CONFIGURATION name                { $$ = ConfigurationName { $2 }; }
+  | CONFIGURATION name                { $$ = ConfigurationName { {}, $2 }; }
   | OPEN                              { $$ = Keyword::Open {}; }
   ;
 
@@ -1033,8 +1053,8 @@ entity_class:
   ;
 
 entity_class_entry:
-    entity_class        { $$ = EntityClassEntry { $1, false }; }
-  | entity_class "<>"   { $$ = EntityClassEntry { $1, true }; }
+    entity_class        { $$ = EntityClassEntry { {}, $1, false }; }
+  | entity_class "<>"   { $$ = EntityClassEntry { {}, $1, true }; }
   ;
 
 entity_class_entry_list:
@@ -1053,7 +1073,7 @@ entity_declaration:
     // SEMANTIC: "simple_name_opt" must be an ENTITY name
     // SEMANTIC: "simple_name_opt" == "identifier"
     END entity_declaration.entity_opt simple_name_opt ';'
-                { $$ = EntityDeclaration { $2, $4, $5, $6, $9 }; }
+                { $$ = EntityDeclaration { {}, $2, $4, $5, $6, $9 }; }
   ;
 
 entity_declaration.entity_statement_part_opt:
@@ -1093,19 +1113,19 @@ entity_declarative_part:
   ;
 
 entity_designator:
-    entity_tag            { $$ = EntityDesginator { $1, std::nullopt }; }
-  | entity_tag signature  { $$ = EntityDesignator { $1, $2 }; }
+    entity_tag            { $$ = EntityDesignator { {}, $1, std::nullopt }; }
+  | entity_tag signature  { $$ = EntityDesignator { {}, $1, $2 }; }
   ;
 
 entity_header:
     %empty                        { $$ = std::nullopt; }
     // SEMANTIC: "generic_clause" must be a FORMAL generic clause
-  | generic_clause                { $$ = EntityHeader { $1, nullptr }; }
+  | generic_clause                { $$ = EntityHeader { {}, $1, nullptr }; }
     // SEMANTIC: "port_clause" must be a FORMAL port clause
-  | port_clause                   { $$ = EntityHeader { nullptr, $1 }; }
+  | port_clause                   { $$ = EntityHeader { {}, nullptr, $1 }; }
     // SEMANTIC: "generic_clause" must be a FORMAL generic clause
     // SEMANTIC: "port_clause" must be a FORMAL port clause
-  | generic_clause port_clause    { $$ = EntityHeader { $1, $2 }; }
+  | generic_clause port_clause    { $$ = EntityHeader { {}, $1, $2 }; }
   ;
 
 entity_name_list:
@@ -1122,7 +1142,7 @@ entity_name_list.entity_designator_mul:
   ;
 
 entity_specification:
-    entity_name_list ':' entity_class   { $$ = EntitySpecification { $1, $3 }; }
+    entity_name_list ':' entity_class   { $$ = EntitySpecification { {}, $1, $3 }; }
   ;
 
 entity_statement:
@@ -1164,7 +1184,7 @@ enumeration_type_definition.inner:
 exit_statement:
     // SEMANTIC: "label_opt" must be a LOOP label
     label_colon_opt EXIT label_opt exit_statement.when_condition_opt ';'
-                { $$ = ExitStatement { $1, $3, $4 }; }
+                { $$ = ExitStatement { {}, $1, $3, $4 }; }
   ;
 
 exit_statement.when_condition_opt:
@@ -1173,7 +1193,7 @@ exit_statement.when_condition_opt:
   ;
 
 expanded_selected_name:
-    simple_prefix '.' suffix  { $$ = ExpandedSelectedName { $1, $3 }; }
+    simple_prefix '.' suffix  { $$ = ExpandedSelectedName { {}, $1, $3 }; }
   ;
 
 simple_prefix:
@@ -1182,13 +1202,13 @@ simple_prefix:
   ;
 
 expression:
-    relation                                { $$ = Expression { std::vector<Relation> { $1 }, RelationKind::AND }; }
-  | relation expression.and_relation_mul    { $2[0] = $1; $$ = Expression { $2, RelationKind::AND }; }
-  | relation expression.or_relation_mul     { $2[0] = $1; $$ = Expression { $2, RelationKind::OR }; }
-  | relation expression.xor_relation_mul    { $2[0] = $1; $$ = Expression { $2, RelationKind::XOR }; }
-  | relation NAND relation                  { $$ = Expression { std::vector<Relation> { $1, $3 }, RelationKind::nand }; }
-  | relation NOR relation                   { $$ = Expression { std::vector<Relation> { $1, $3 }, RelationKind::nor }; }
-  | relation expression.xnor_relation_mul   { $2[0] = $1; $$ = Expression { $2, RelationKind::xnor }; }
+    relation                                { $$ = Expression { {}, std::vector<Relation> { $1 }, RelationKind::AND }; }
+  | relation expression.and_relation_mul    { $2[0] = $1; $$ = Expression { {}, $2, RelationKind::AND }; }
+  | relation expression.or_relation_mul     { $2[0] = $1; $$ = Expression { {}, $2, RelationKind::OR }; }
+  | relation expression.xor_relation_mul    { $2[0] = $1; $$ = Expression { {}, $2, RelationKind::XOR }; }
+  | relation NAND relation                  { $$ = Expression { {}, std::vector<Relation> { $1, $3 }, RelationKind::nand }; }
+  | relation NOR relation                   { $$ = Expression { {}, std::vector<Relation> { $1, $3 }, RelationKind::nor }; }
+  | relation expression.xnor_relation_mul   { $2[0] = $1; $$ = Expression { {}, $2, RelationKind::xnor }; }
   ;
 
 expression.and_relation_mul:
@@ -1216,17 +1236,17 @@ expression.xnor_relation_mul:
   ;
 
 factor:
-    primary               { $$ = Factor { $1, std::nullopt }; }
-  | primary "**" primary  { $$ = Factor { $1, $3, FactorKind::exp }; }
-  | ABS primary           { $$ = Factor { $2, std::nullopt, FactorKind:abd }; }
-  | NOT primary           { $$ = Factor { $2, std::nullopt, FactorKind:NOT }; }
+    primary               { $$ = Factor { {}, $1, std::nullopt }; }
+  | primary "**" primary  { $$ = Factor { {}, $1, $3, FactorKind::exp }; }
+  | ABS primary           { $$ = Factor { {}, $2, std::nullopt, FactorKind:abd }; }
+  | NOT primary           { $$ = Factor { {}, $2, std::nullopt, FactorKind:NOT }; }
   ;
 
 file_declaration:
     FILE identifier_list ':' subtype_indication ';'
-                { $$ = FileDeclaration { $2, $4 }; }
+                { $$ = FileDeclaration { {}, $2, $4 }; }
   | FILE identifier_list ':' subtype_indication file_open_information ';'
-                { $$ = FileDeclaration { $2, $4, $5 }; }
+                { $$ = FileDeclaration { {}, $2, $4, $5 }; }
   ;
 
 file_logical_name:
@@ -1241,13 +1261,13 @@ file_open_kind_expression:
 
 file_open_information:
     IS file_logical_name
-                { $$ = FileOpenInformation { $2 }; }
+                { $$ = FileOpenInformation { {}, $2 }; }
   | OPEN file_open_kind_expression IS file_logical_name
-                { $$ = FileOpenInformation { $4, $2 }; }
+                { $$ = FileOpenInformation { {}, $4, $2 }; }
   ;
 
 file_type_definition:
-    FILE OF type_mark   { $$ = FileTypeDefinition { $3 }; }
+    FILE OF type_mark   { $$ = FileTypeDefinition { {}, $3 }; }
   ;
 
 formal_designator:
@@ -1266,21 +1286,21 @@ formal_parameter_list:
   ;
 
 formal_part:
-    formal_designator                 { $$ = FormalPart { $1 }; }
+    formal_designator                 { $$ = FormalPart { {}, $1 }; }
     // Name must be function_name or a type_mark
-  | name '(' formal_designator ')'    { $$ = FormalPart { $3, $1 }; }
+  | name '(' formal_designator ')'    { $$ = FormalPart { {}, $3, $1 }; }
   ;
 
 full_type_declaration:
-    TYPE identifier IS type_definition ';'  { $$ = TypeDeclaration { $2, $4 }; }
+    TYPE identifier IS type_definition ';'  { $$ = TypeDeclaration { {}, $2, $4 }; }
   ;
 
 function_call:
     // SEMANTIC: "name" must be a function_name
-    name                            { $$ = FunctionCall { $1 }; }
+    name                            { $$ = FunctionCall { {}, $1 }; }
     // SEMANTIC: "association_list" is a PARAMETER association list
     // SEMANTIC: "name" must be a function name
-  | name '(' association_list ')'   { $$ = FunctionCall { $1, $3 }; }
+  | name '(' association_list ')'   { $$ = FunctionCall { {}, $1, $3 }; }
   ;
 
 generate_statement:
@@ -1291,7 +1311,7 @@ generate_statement:
       // SEMANTIC: "label_opt" must be a GENERATE label
       // SEMANTIC: "label_opt" == "label"
       END GENERATE label_opt ';'
-              { $$ = GenerateStatement { $1, $3, $5, $6, $9 }; }
+              { $$ = GenerateStatement { {}, $1, $3, $5, $6, $9 }; }
   ;
 
 generate_statement.block_declarative_statement_opt:
@@ -1322,7 +1342,7 @@ generation_scheme:
 
 generic_clause:
     GENERIC '(' interface_constant_declaration_list ')' ';'
-              { $$ = GenericClause { $3 }; }
+              { $$ = GenericClause { {}, $3 }; }
   ;
 
 generic_map_aspect:
@@ -1350,17 +1370,17 @@ group_constituent_list:
 group_declaration:
     // SEMANTIC: "name" must be a GROUP TEMPLATE name
     GROUP identifier ':' name '(' group_constituent_list ')' ';'
-              { $$ = GroupDeclaration { $2, $4, $6 }; }
+              { $$ = GroupDeclaration { {}, $2, $4, $6 }; }
   ;
 
 group_template_declaration:
     GROUP identifier IS '(' entity_class_entry_list ')' ';'
-              { $$ = GroupTemplateDeclaration { $2, $5 }; }
+              { $$ = GroupTemplateDeclaration { {}, $2, $5 }; }
   ;
 
 guarded_signal_specification:
     // SEMANTIC: "signal_list" must be a list of GUARDD signals + locally static
-    signal_list ':' type_mark   { $$ = GuardedSignalSpecification { $1, $3 }; }
+    signal_list ':' type_mark   { $$ = GuardedSignalSpecification { {}, $1, $3 }; }
   ;
 
 identifier:
@@ -1382,7 +1402,7 @@ if_statement:
       // SEMANTIC: "label_opt" must be an IF STATEMENT label
       // SEMANTIC: "label_opt" == "label_colon_opt"
       END IF label_opt ';'
-              { $6[0] =  std::make_pair($3, $5); $$ = IfStatement { $1, $6, $7, $10 }; }
+              { $6[0] =  std::make_pair($3, $5); $$ = IfStatement { {}, $1, $6, $7, $10 }; }
   ;
 
 if_statement.elsif_condition_mopt:
@@ -1398,7 +1418,7 @@ if_statement.else_opt:
   ;
 
 incomplete_type_declaration:
-    TYPE identifier   { $$ = TypeDeclaration { $2 }; }
+    TYPE identifier   { $$ = TypeDeclaration { {}, $2 }; }
   ;
 
 index_constraint:
@@ -1431,7 +1451,7 @@ index_subtype_definition_mul:
 
 indexed_name:
     prefix '(' indexed_name.expression_mul ')'
-              { $$ = IndexedName { $1, $3 }}
+              { $$ = IndexedName { {}, $1, $3 }}
   ;
 
 indexed_name.expression_mul:
@@ -1448,16 +1468,16 @@ init_expression_opt:
 
 instantiated_unit:
     // SEMANTIC: "name" must be a COMPONENT name
-    name                              { $$ = ComponentUnit { $1 }; }
+    name                              { $$ = ComponentUnit { {}, $1 }; }
     // SEMANTIC: "name" must be a COMPONENT name
-  | COMPONENT name                    { $$ = ComponentUnit { $2 }; }
+  | COMPONENT name                    { $$ = ComponentUnit { {}, $2 }; }
     // SEMANTIC: "name" must be an ENTITY name
-  | ENTITY name                       { $$ = EntityName { $2 }; }
+  | ENTITY name                       { $$ = EntityName { {}, $2 }; }
     // SEMANTIC: "name" must be an ENTITY name
     // SEMANTIC: "identifier" must be an ARCHITECTURE identifier
-  | ENTITY name '(' identifier ')'    { $$ = EntityName { $2, $4 }; }
+  | ENTITY name '(' identifier ')'    { $$ = EntityName { {}, $2, $4 }; }
     // SEMANTIC: "name" must be a CONFIGURATION name
-  | CONFIGURATION name                { $$ = ConfigurationName { $2 }; }
+  | CONFIGURATION name                { $$ = ConfigurationName { {}, $2 }; }
   ;
 
 instantiation_list:
@@ -1480,7 +1500,7 @@ interface_constant_declaration:
       interface_constant_declaration.in_opt subtype_indication
         // SEMANTIC: "init_expression_opt" must be a STATIC expression
         init_expression_opt
-              { $$ = InterfaceConstantDeclaration { $2, $5, $6 }; }
+              { $$ = InterfaceConstantDeclaration { {}, $2, $5, $6 }; }
   ;
 
 interface_constant_declaration_list:
@@ -1509,7 +1529,7 @@ interface_element:
 
 interface_file_declaration:
     FILE identifier_list ':' subtype_indication
-              { $$ = InterfaceFileDeclaration { $2, $4 }; }
+              { $$ = InterfaceFileDeclaration { {}, $2, $4 }; }
   ;
 
 interface_list:
@@ -1522,20 +1542,20 @@ interface_list:
 interface_signal_declaration:
     // SEMANTIC: "init_expression_opt" must be a STATIC expression
     SIGNAL identifier_list ':' mode_opt subtype_indication bus_opt init_expression_opt
-              { $$ = InterfaceSignalDeclaration { $2, $4, $5, $6, $7 }; }
+              { $$ = InterfaceSignalDeclaration { {}, $2, $4, $5, $6, $7 }; }
   ;
 
 // SEMANTIC: Can be signal/constant/variable, must be decoded from context?
 // TODO: Is this correct?
 interface_unresolved_declaration:
     identifier_list ':' mode_opt subtype_indication bus_opt init_expression_opt
-              { $$ = InterfaceUnresolvedDeclaration { $1, $3, $5, $5, $6 }; }
+              { $$ = InterfaceUnresolvedDeclaration { {}, $1, $3, $5, $5, $6 }; }
   ;
 
 interface_variable_declaration:
     // SEMANTIC: "init_expression_opt" must be a STATIC expression
     VARIABLE identifier_list ':' mode_opt subtype_indication init_expression_opt
-              { $$ = InterfaceVariableDeclaration { $2, $4, $5, $6 }; }
+              { $$ = InterfaceVariableDeclaration { {}, $2, $4, $5, $6 }; }
   ;
 
 is_opt:
@@ -1593,7 +1613,7 @@ loop_statement:
       // SEMANTIC: "label_opt" must be a LOOP label
       // SEMANTIC: "label_opt" == "label_colon_opt"
       END LOOP label_opt ';'
-              { $$ = LoopStatement { $1, $2, $4, $7 }; }
+              { $$ = LoopStatement { {}, $1, $2, $4, $7 }; }
   ;
 
 loop_statement.iteration_scheme_opt:
@@ -1633,7 +1653,7 @@ name:
 next_statement:
     // SEMANTIC: label_opt must be an enclosing LOOP label
     label_colon_opt NEXT label_opt next_statement.when_opt ';'
-              { $$ = NextStatement { $1, $3, $4 }; }
+              { $$ = NextStatement { {}, $1, $3, $4 }; }
   ;
 
 next_statement.when_opt:
@@ -1642,7 +1662,7 @@ next_statement.when_opt:
   ;
 
 null_statement:
-    label_colon_opt ID_NULL ';'   { $$ = NullStatement { $1 }; }
+    label_colon_opt ID_NULL ';'   { $$ = NullStatement { {}, $1 }; }
   ;
 
 numeric_literal:
@@ -1652,7 +1672,7 @@ numeric_literal:
 
 options:
     options.guarded_opt options.delay_mechanism_opt
-              { $$ = Options { $1, $2 }; }
+              { $$ = Options { {}, $1, $2 }; }
   ;
 
 options.guarded_opt:
@@ -1671,7 +1691,7 @@ package_body:
     // SEMANTIC: "simple_name_opt" must be a PACKAGE name
     // SEMANTIC: "simple_nam_opt" == "simple_name"
     END package_body.package_body_opt simple_name_opt ';'
-            { $$ = PackageBody { $3, $5, $8 }; }
+            { $$ = PackageBody { {}, $3, $5, $8 }; }
   ;
 
 package_body.package_body_opt:
@@ -1706,7 +1726,7 @@ package_declaration:
     // SEMANTIC: "simple_name_opt" must be a PACKAGE name
     // SEMANTIC: "simple_name_opt" == "identifier"
     END package.package_opt simple_name_opt ';'
-              { $$ = PackageDeclaration { $2, $4, $7 }; }
+              { $$ = PackageDeclaration { {}, $2, $4, $7 }; }
   ;
 
 package.package_opt:
@@ -1740,14 +1760,14 @@ package_declarative_part:
   ;
 
 parameter_specification:
-    identifier IN discrete_range  { $$ = ParameterSpecification { $1, $3 }; }
+    identifier IN discrete_range  { $$ = ParameterSpecification { {}, $1, $3 }; }
   ;
 
 physical_literal:
     // SEMANTIC: "name" must be a PHYSICAL UNIT name
-    name                    { $$ = PhysicalLiteral { $1 }; }
+    name                    { $$ = PhysicalLiteral { {}, $1 }; }
     // SEMANTIC: "name" must be a PHYSICAL UNIT name
-  | abstract_literal name   { $$ = PhysicalLiteral { $2, $1 }; }
+  | abstract_literal name   { $$ = PhysicalLiteral { {}, $2, $1 }; }
   ;
 
 physical_type_definition:
@@ -1758,7 +1778,7 @@ physical_type_definition:
       // SEMANTIC: "simple_name_opt" must be a PHYSICAL TYPE name
       // SEMANTIC: "simple_name_opt" should be equal to the type name it's enclosing
       END UNITS simple_name_opt
-              { $$ = PhysicalTypeDefinition { $1, $3, $4, $7 }; }
+              { $$ = PhysicalTypeDefinition { {}, $1, $3, $4, $7 }; }
   ;
 
 physical_type_definition.secondary_unit_declaration_mopt:
@@ -1769,7 +1789,7 @@ physical_type_definition.secondary_unit_declaration_mopt:
   ;
 
 port_clause:
-    PORT '(' port_list ')' ';'    { $$ = PortClause { $3 }; }
+    PORT '(' port_list ')' ';'    { $$ = PortClause { {}, $3 }; }
   ;
 
 port_interface_declaration:
@@ -1793,7 +1813,7 @@ port_list:
 
 port_map_aspect:
     // SEMANTIC: "association_list" is a PORT association list
-    PORT MAP '(' association_list ')'   { $$ = PortMapAspect { $4 }; }
+    PORT MAP '(' association_list ')'   { $$ = PortMapAspect { {}, $4 }; }
   ;
 
 port_map_aspect_opt:
@@ -1829,14 +1849,14 @@ primary_unit_declaration:
 
 procedure_call:
     // SEMANTIC: "name" must be a procedure name
-    name                            { $$ = ProcedureCall { $1 }; }
+    name                            { $$ = ProcedureCall { {}, $1 }; }
     // SEMANTIC: "association_list" is a PARAMETER association list
     // SEMANTIC: "name" must be a procedure name
-  | name '(' association_list ')'   { $$ = ProcedureCall { $1, $3 }; }
+  | name '(' association_list ')'   { $$ = ProcedureCall { {}, $1, $3 }; }
   ;
 
 procedure_call_statement:
-    label_colon_opt procedure_call ';'  { $$ = ProcedureCallStatement { $2, $1 }; }
+    label_colon_opt procedure_call ';'  { $$ = ProcedureCallStatement { {}, $2, $1 }; }
   ;
 
 process_declarative_item:
@@ -1872,7 +1892,7 @@ process_statement:
       // SEMANTIC: "label_opt" must be a PROCESS label
       // SEMANTIC: "label_opt" == "label_colon_opt"
       END process_statement.postponed_opt PROCESS label_opt ';'
-              { $$ = ProcessStatement { $1, $2, $4, $6, $8, $10, $12 }; }
+              { $$ = ProcessStatement { {}, $1, $2, $4, $6, $8, $10, $12 }; }
   ;
 
 process_statement.postponed_opt:
@@ -1897,7 +1917,7 @@ protected_type_body:
       protected_type_body_declarative_part
     // SEMANTIC: "simple_name_opt" must be a PROTECTED TYPE name
     END PROTECTED BODY simple_name_opt
-            { $$ = ProtectedTypeBody { $3, $7 }; }
+            { $$ = ProtectedTypeBody { {}, $3, $7 }; }
   ;
 
 protected_type_body_declarative_item:
@@ -1929,7 +1949,7 @@ protected_type_declaration:
     // SEMANTIC: "simple_name_opt" must be a PROTECTED TYPE name
     // SEMANTIC: "simple_name_opt" should be equal to the name in enclosing type definition
     END PROTECTED simple_name_opt
-              { $$ = ProtectedTypeDeclaration { $2, $5 }; }
+              { $$ = ProtectedTypeDeclaration { {}, $2, $5 }; }
   ;
 
 protected_type_declarative_item:
@@ -1951,15 +1971,15 @@ protected_type_definition:
   ;
 
 qualified_expression:
-    type_mark '\'' '(' expression ')'   { $$ = QualifiedExpression { $1, $4, std::nullopt }; }
-  | type_mark '\'' aggregate            { $$ = QualifiedExpression { $1, std::nullopt, $3 }; }
+    type_mark '\'' '(' expression ')'   { $$ = QualifiedExpression { {}, $1, $4, std::nullopt }; }
+  | type_mark '\'' aggregate            { $$ = QualifiedExpression { {}, $1, std::nullopt, $3 }; }
   ;
 
 range:
     // SEMANTIC: "attribute_name" must be a RANGE attribute name
     attribute_name
   | simple_expression direction simple_expression
-              { $$ = SimpleRange { $1, $2, $3 }; }
+              { $$ = SimpleRange { {}, $1, $2, $3 }; }
   ;
 
 range_constraint:
@@ -1972,7 +1992,7 @@ record_type_definition:
     // SEMANTIC: "simple_name_opt" must be a RECORD TYPE name
     // SEMANTIC: "simple_name_opt" should be equal to the enclosing type name
     END RECORD simple_name_opt
-              { $$ = RecordTypeDefinition { $2, $5 }; }
+              { $$ = RecordTypeDefinition { {}, $2, $5 }; }
   ;
 
 record_type_definition.element_declaration_mul:
@@ -1984,9 +2004,9 @@ record_type_definition.element_declaration_mul:
 
 relation:
     shift_expression
-              { $$ = Relation { $1 }; }
+              { $$ = Relation { {}, $1 }; }
   | shift_expression relational_operator shift_expression
-              { $$ = Relation { $1, $2, $3 }; }
+              { $$ = Relation { {}, $1, $2, $3 }; }
   ;
 
 relational_operator:
@@ -2000,10 +2020,10 @@ relational_operator:
 
 report_statement:
     label_colon_opt REPORT expression ';'
-              { $$ = ReportStatement { $1, $3 }; }
+              { $$ = ReportStatement { {}, $1, $3 }; }
   | label_colon_opt REPORT expression
       SEVERITY expression ';'
-              { $$ = ReportStatement { $1, $3, $5 }; }
+              { $$ = ReportStatement { {}, $1, $3, $5 }; }
   ;
 
 // FIXME: Check if this is correct
@@ -2014,9 +2034,9 @@ resolution_function_name_opt:
 
 return_statement:
     label_colon_opt RETURN ';'
-              { $$ = ReturnStatement { $1 }; }
+              { $$ = ReturnStatement { {}, $1 }; }
   | label_colon_opt RETURN expression ';'
-              { $$ = ReturnStatement { $1, $3 }; }
+              { $$ = ReturnStatement { {}, $1, $3 }; }
   ;
 
 scalar_type_definition:
@@ -2033,23 +2053,23 @@ secondary_unit:
   ;
 
 secondary_unit_declaration:
-    identifier '=' physical_literal   { $$ = SecondaryUnitDeclaration { $1, $3 }; }
+    identifier '=' physical_literal   { $$ = SecondaryUnitDeclaration { {}, $1, $3 }; }
   ;
 
 selected_name:
-    prefix '.' suffix   { $$ = SelectedName { $1, $3 }; }
+    prefix '.' suffix   { $$ = SelectedName { {}, $1, $3 }; }
   ;
 
 selected_signal_assignment:
     WITH expression SELECT
       target "<=" options selected_waveforms ';'
-              { $$ = SelectedSignalAssignment { $2, $4, $6, $7 }; }
+              { $$ = SelectedSignalAssignment { {}, $2, $4, $6, $7 }; }
   ;
 
 // TODO: Check if correct
 selected_waveforms:
     waveform WHEN choices
-              { $$ = std::vector<SelectedWaveform> { SelectedWaveform { $1, $3 } }; }
+              { $$ = std::vector<SelectedWaveform> { SelectedWaveform { {}, $1, $3 } }; }
   | selected_waveforms ',' waveform WHEN choices
               { $1.emplace_back<SelectedWaveform>($3, $5); $$ = $1; }
   ;
@@ -2091,18 +2111,18 @@ sequential_statement:
 
 shift_expression:
     simple_expression
-              { $$ = ShiftExpression { $1 }; }
+              { $$ = ShiftExpression { {}, $1 }; }
   | simple_expression shift_operator simple_expression
-              { $$ = ShiftExpression { $1, $2, $3 }; }
+              { $$ = ShiftExpression { {}, $1, $2, $3 }; }
   ;
 
 shift_operator:
-    SLL   { $$ = ShiftOp::sll; }
-  | SRL   { $$ = ShiftOp::srl; }
-  | SLA   { $$ = ShiftOp::sla; }
-  | SRA   { $$ = ShiftOp::sra; }
-  | ROL   { $$ = ShiftOp::rol; }
-  | ROR   { $$ = ShiftOp::ror; }
+    SLL   { $$ = ShiftOperator::sll; }
+  | SRL   { $$ = ShiftOperator::srl; }
+  | SLA   { $$ = ShiftOperator::sla; }
+  | SRA   { $$ = ShiftOperator::sra; }
+  | ROL   { $$ = ShiftOperator::rol; }
+  | ROR   { $$ = ShiftOperator::ror; }
   ;
 
 sign:
@@ -2112,7 +2132,7 @@ sign:
 
 signal_assignment_statement:
     label_colon_opt target "<=" signal_assignment_statement.delay_mechanism_opt waveform ';'
-              { $$ = SignalAssignmentStatement { $1, $2, $4, $5 }; }
+              { $$ = SignalAssignmentStatement { {}, $1, $2, $4, $5 }; }
   ;
 
 signal_assignment_statement.delay_mechanism_opt:
@@ -2122,7 +2142,7 @@ signal_assignment_statement.delay_mechanism_opt:
 
 signal_declaration:
     SIGNAL identifier_list ':' subtype_indication signal_declaration.signal_kind_opt init_expression_opt ';'
-              { $$ = SignalDeclaration { $2, $4, $5, $6 }; }
+              { $$ = SignalDeclaration { {}, $2, $4, $5, $6 }; }
   ;
 
 signal_declaration.signal_kind_opt:
@@ -2151,9 +2171,9 @@ signal_list.name_mul:
 
 signature:
     %empty                                            { $$ = std::nullopt; }
-  | '[' signature.type_mark_mul ']'                   { $$ = Signature { $2, std::nullopt }; }
-  | '[' RETURN type_mark ']'                          { $$ = Signature { std::nullopt, $3 }; }
-  | '[' signature.type_mark_mul RETURN type_mark ']'  { $$ = Signature { $2, $4 }; }
+  | '[' signature.type_mark_mul ']'                   { $$ = Signature { {}, $2, std::nullopt }; }
+  | '[' RETURN type_mark ']'                          { $$ = Signature { {}, std::nullopt, $3 }; }
+  | '[' signature.type_mark_mul RETURN type_mark ']'  { $$ = Signature { {}, $2, $4 }; }
   ;
 
 signature.type_mark_mul:
@@ -2165,7 +2185,7 @@ signature.type_mark_mul:
 
 simple_expression:
     simple_expression.sign_opt term simple_expression.adding_operator_mopt
-              { $$ = SimpleExpression { $1, $2, $3 }; }
+              { $$ = SimpleExpression { {}, $1, $2, $3 }; }
   ;
 
 simple_expression.sign_opt:
@@ -2190,7 +2210,7 @@ simple_name_opt:
   ;
 
 slice_name:
-    prefix '(' discrete_range ')'   { $$ = SliceName { $1, $3 }; }
+    prefix '(' discrete_range ')'   { $$ = SliceName { {}, $1, $3 }; }
   ;
 
 subprogram_body:
@@ -2199,7 +2219,7 @@ subprogram_body:
     BEGIN
       subprogram_statement_part
     END subprogram_body.subprogram_kind_opt designator_opt ';'
-              { $$ = SubprogramBody { $1, $3, $5, $7, $8 }; }
+              { $$ = SubprogramBody { {}, $1, $3, $5, $7, $8 }; }
   ;
 
 subprogram_body.subprogram_kind_opt:
@@ -2241,13 +2261,13 @@ subprogram_kind:
 
 subprogram_specification:
     PROCEDURE designator
-            { $$ = ProcedureSpecification { $2 }; }
+            { $$ = ProcedureSpecification { {}, $2 }; }
   | PROCEDURE designator '(' formal_parameter_list ')'
-            { $$ = ProcedureSpecification { $2, $4 }; }
+            { $$ = ProcedureSpecification { {}, $2, $4 }; }
   | function_type FUNCTION designator RETURN type_mark
-            { $$ = FunctionSpecification { $1, $3, std::nullopt, $5 }; }
+            { $$ = FunctionSpecification { {}, $1, $3, std::nullopt, $5 }; }
   | function_type FUNCTION designator '(' formal_parameter_list ')' RETURN type_mark
-            { $$ = FunctionSpecification { $1, $3, $5, $8 }; }
+            { $$ = FunctionSpecification { {}, $1, $3, $5, $8 }; }
   ;
 
 function_type:
@@ -2265,12 +2285,12 @@ subprogram_statement_part:
 
 subtype_declaration:
     SUBTYPE identifier IS subtype_indication ';'
-              { $$ = SubtypeDeclaration { $2, $4 }; }
+              { $$ = SubtypeDeclaration { {}, $2, $4 }; }
   ;
 
 subtype_indication:
     resolution_function_name_opt type_mark constraint_opt
-              { $$ = SubtypeIndication { $1, $2, $3 }; }
+              { $$ = SubtypeIndication { {}, $1, $2, $3 }; }
   ;
 
 
@@ -2287,8 +2307,8 @@ target:
   ;
 
 term:
-    factor                            { $$ = Term { nullptr, std::nullopt, $1 }; }
-  | term multiplying_operator factor  { $$ = Term { $1, $2, $3 }; }
+    factor                            { $$ = Term { {}, nullptr, std::nullopt, $1 }; }
+  | term multiplying_operator factor  { $$ = Term { {}, $1, $2, $3 }; }
   ;
 
 time_expression:
@@ -2301,7 +2321,7 @@ timeout_clause:
   ;
 
 type_conversion:
-    type_mark '(' expression ')'  { $$ = TypeConversion { $1, $3 }; }
+    type_mark '(' expression ')'  { $$ = TypeConversion { {}, $1, $3 }; }
   ;
 
 type_declaration:
@@ -2325,12 +2345,12 @@ type_mark:
 unconstrained_array_definition:
     // SEMANTIC: "subtype_indication" is an ELEMENT subtype indication
     ARRAY '(' index_subtype_definition_mul ')' OF subtype_indication
-            { $$ = UnconstrainedArrayDefinition { $3, $6 }; }
+            { $$ = UnconstrainedArrayDefinition { {}, $3, $6 }; }
   ;
 
 use_clause:
     USE use_clause.selected_name_mul ';'
-            { $$ = UseClause { $2 }; }
+            { $$ = UseClause { {}, $2 }; }
   ;
 
 use_clause.selected_name_mul:
@@ -2347,7 +2367,7 @@ value_expression:
 
 variable_assignment_statement:
     label_colon_opt target ":=" expression ';'
-            { $$ = VariableAssignmentStatement { $1, $2, $4 }; }
+            { $$ = VariableAssignmentStatement { {}, $1, $2, $4 }; }
   ;
 
 variable_declaration:
@@ -2357,17 +2377,17 @@ variable_declaration:
 
 plain_variable_declaration:
     VARIABLE identifier_list ':' subtype_indication init_expression_opt ';'
-            { $$ = PlainVariableDeclaration { $2, $4, $5 }; }
+            { $$ = PlainVariableDeclaration { {}, $2, $4, $5 }; }
   ;
 
 shared_variable_declaration:
     SHARED plain_variable_declaration
-            { $$ = SharedVariableDeclaration { $2 }; }
+            { $$ = SharedVariableDeclaration { {}, $2 }; }
   ;
 
 wait_statement:
     label_colon_opt WAIT wait_statement.sensitivity_clause_opt wait_statement.condition_clause_opt wait_statement.timeout_clause_opt ';'
-            { $$ = WaitStatement { $1, $3, $4, $5 }; }
+            { $$ = WaitStatement { {}, $1, $3, $4, $5 }; }
   ;
 
 wait_statement.sensitivity_clause_opt:
@@ -2399,12 +2419,12 @@ waveform.waveform_element_mul:
 
 waveform_element:
     value_expression
-                { $$ = WaveformElementKind::ValueExpression { $1 }; }
+                { $$ = WaveformElementKind::ValueExpression { {}, $1 }; }
   | value_expression AFTER time_expression
-                { $$ = WaveformElementKind::ValueExpression { $1, $3 }; }
+                { $$ = WaveformElementKind::ValueExpression { {}, $1, $3 }; }
   | ID_NULL
                 { $$ = WaveformElementKind::NullExpression {}; }
   | ID_NULL AFTER time_expression
-                { $$ = WaveformElementKind::NullExpression { $3 }; }
+                { $$ = WaveformElementKind::NullExpression { {}, $3 }; }
   ;
 %%
