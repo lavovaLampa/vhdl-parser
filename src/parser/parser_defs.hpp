@@ -58,6 +58,7 @@ struct ElementDeclaration;
 struct EntityClassEntry;
 struct EntityDeclaration;
 struct EntityDesignator;
+struct EntityHeader;
 struct EntityName;
 struct EntitySpecification;
 struct EntityUnit;
