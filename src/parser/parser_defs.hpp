@@ -148,8 +148,6 @@ namespace Keyword {
     };
     struct Others {
     };
-    struct Open {
-    };
     struct All {
     };
     struct Null {
@@ -1245,7 +1243,7 @@ struct ProtectedTypeDeclaration : AstNode {
 struct QualifiedExpression : AstNode {
     Name type_mark;
     std::optional<Expression> expression;
-    std::optional<std::unique_ptr<Aggregate>> aggregate;
+    std::optional<Aggregate> aggregate;
 };
 
 struct SimpleRange : AstNode {

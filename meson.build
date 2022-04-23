@@ -12,7 +12,9 @@ src = [
     'src/main.cpp',
     'src/error.cpp',
     'src/lexer/lexer_utils.cpp',
-    'src/lexer/lexer_defs.cpp'
+    'src/lexer/lexer_defs.cpp',
+    'src/parser/parser_defs.cpp',
+    'src/parser/vhdl_sem.tab.cc',
 ]
 
 inc = include_directories(

@@ -48,14 +48,14 @@ int main(int argc, char const* argv[])
         std::ifstream& file_stream { opt_file_stream.value() };
         std::string file_contents { read_whole_file(file_stream) };
 
-        Lexer::LexerState lexer_state {
+        lexer::LexerState lexer_state {
             .base { file_contents.data() },
             .cursor { file_contents.data() },
             .limit { file_contents.data() + file_contents.size() }
         };
 
         while (lexer_state.cursor < lexer_state.limit) {
-            auto result { Lexer::lex(lexer_state) };
+            auto result { lexer::lex(lexer_state) };
 
             if (result.has_value()) {
                 std::visit([](auto& arg) { std::cout << arg << std::endl; }, result.value());

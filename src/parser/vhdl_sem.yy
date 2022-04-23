@@ -158,304 +158,304 @@
 %token <lexer::ExtendedIdentifier>  EXTENDED_IDENTIFIER "extended identifier"
 %token <lexer::StringLiteral>       STRING_LITERAL      "string symbol"
 
-%nterm <AbstractLiteral>                                    abstract_literal
-%nterm <AccessTypeDefinition>                               access_type_definition
-%nterm <ActualDesignator>                                   actual_designator
-%nterm <ActualPart>                                         actual_part
-%nterm <AddingOperator>                                     adding_operator
-%nterm <Aggregate>                                          aggregate
-%nterm <Aggregate>                                          aggregate.element_association_mul
-%nterm <AliasDeclaration>                                   alias_declaration
-%nterm <std::optional<std::unique_ptr<SubtypeIndication>>>  alias_declaration.opt_subtype
-%nterm <AliasDesignator>                                    alias_designator
-%nterm <Allocator>                                          allocator
-%nterm <ArchitectureBody>                                   architecture_body
-%nterm <std::vector<BlockDeclarativeItem>>                  architecture_declarative_part
-%nterm <std::vector<ConcurrentStatement>>                   architecture_statement_part
-%nterm <ArrayTypeDefinition>                                array_type_definition
-%nterm <Assertion>                                          assertion
-%nterm <std::unique_ptr<Expression>>                        assertion.report_opt
-%nterm <std::unique_ptr<Expression>>                        assertion.severity_opt
-%nterm <AssertionStatement>                                 assertion_statement
-%nterm <AssociationElement>                                 association_element
-%nterm <std::vector<AssociationElement>>                    association_list
-%nterm <AttributeDeclaration>                               attribute_declaration
-%nterm <Identifier>                                         attribute_designator
-%nterm <AttributeName>                                      attribute_name
-%nterm <std::unique_ptr<Expression>>                        attribute_name.expression_opt
-%nterm <AttributeSpecification>                             attribute_specification
-%nterm <BindingIndication>                                  binding_indication
-%nterm <std::unique_ptr<EntityAspect>>                      binding_indication.entity_aspect_opt
-%nterm <BlockConfiguration>                                 block_configuration
-%nterm <std::vector<UseClause>>                             block_configuration.use_clause_mopt
-%nterm <std::vector<ConfigurationItem>>                     block_configuration.configuration_item_mopt
-%nterm <BlockDeclarativeItem>                               block_declarative_item
-%nterm <std::vector<BlockDeclarativeItem>>                  block_declarative_part
-%nterm <BlockHeader>                                        block_header
-%nterm <BlockHeaderGenericClause>                           block_header.generic_clause
-%nterm <BlockHeaderPortClause>                              block_header.port_clause
-%nterm <BlockSpecification>                                 block_specification
-%nterm <BlockStatement>                                     block_statement
-%nterm <std::unique_ptr<Expression>>                        block_statement.guard_expression_opt
-%nterm <std::vector<ConcurrentStatement>>                   block_statement_part
-%nterm <bool>                                               bus_opt
-%nterm <CaseStatement>                                      case_statement
-%nterm <std::vector<CaseAlternative>>                       case_statement.case_statement_alternative_mul
-%nterm <CaseAlternative>                                    case_statement_alternative
-%nterm <Choice>                                             choice
-%nterm <std::vector<Choice>>                                choices
-%nterm <ComponentConfiguration>                             component_configuration
-%nterm <std::optional<BindingIndication>>                   component_configuration.binding_indication_opt
-%nterm <std::optional<BlockConfiguration>>                  component_configuration.block_configuration_opt
-%nterm <ComponentDeclaration>                               component_declaration
-%nterm <std::optional<GenericClause>>                       component_declaration.local_generic_clause_opt
-%nterm <std::optional<PortClause>>                          component_declaration.local_port_clause_opt
-%nterm <ComponentInstantiation>                             component_instantiation_statement
-%nterm <ComponentSpecification>                             component_specification
-%nterm <CompositeTypeDefinition>                            composite_type_definition
-%nterm <ConcurrentAssertion>                                concurrent_assertion_statement
-%nterm <bool>                                               postponed_opt
-%nterm <ConcurrentSignalAssignment>                         concurrent_procedure_call_statement
-%nterm <ConcurrentSelectedSignalAssignment>                 concurrent_signal_assignment_statement
-%nterm <ConcurrentStatement>                                concurrent_statement
-%nterm <Expression>                                         condition
-%nterm <ConditionClause>                                    condition_clause
-%nterm <ConditionalSignalAssignment>                        conditional_signal_assignment
-%nterm <ConditionalWaveforms>                               conditional_waveforms
-%nterm <std::vector<ConditionalWaveform>>                   conditional_waveforms.waveform_condition_mopt
-%nterm <std::unique_ptr<Expression>>                        conditional_waveforms.when_condition_opt
-%nterm <ConfigurationDeclaration>                           configuration_declaration
-%nterm <ConfigurationDeclarativeItem>                       configuration_declarative_item
-%nterm <std::vector<ConfigurationDeclarativeItem>>          configuration_declarative_part
-%nterm <ConfigurationItem>                                  configuration_item
-%nterm <ConfigurationSpecification>                         configuration_specification
-%nterm <ConstantDeclaration>                                constant_declaration
-%nterm <std::unique_ptr<Expression>>                        constant_declaration.expression_opt
-%nterm <ConstrainedArrayDefinition>                         constrained_array_definition
-%nterm <Constraint>                                         constraint
-%nterm <std::optional<Constraint>>                          constraint_opt
-%nterm <std::vector<ContextItem>>                           context_clause
-%nterm <ContextItem>                                        context_item
-%nterm <DelayMechanism>                                     delay_mechanism
-%nterm <std::vector<DesignUnit>>                            design_file
-%nterm <DesignUnit>                                         design_unit
-%nterm <Designator>                                         designator
-%nterm <std::optional<Designator>>                          designator_opt
-%nterm <Direction>                                          direction
-%nterm <DisconnectionSpecification>                         disconnection_specification
-%nterm <DiscreteRange>                                      discrete_range
-%nterm <ElementAssociation>                                 element_association
-%nterm <ElementDeclaration>                                 element_declaration
-%nterm <SubtypeIndication>                                  element_subtype_definition
-%nterm <EntityAspect>                                       entity_aspect
-%nterm <EntityClass>                                        entity_class
-%nterm <EntityClassEntry>                                   entity_class_entry
-%nterm <std::vector<EntityClassEntry>>                      entity_class_entry_list
-%nterm <EntityDeclaration>                                  entity_declaration
-%nterm <std::vector<EntityStatement>>                       entity_declaration.entity_statement_part_opt
-%nterm <EntityDeclarativeItem>                              entity_declarative_item
-%nterm <std::vector<EntityDeclarativeItem>>                 entity_declarative_part
-%nterm <EntityDesignator>                                   entity_designator
-%nterm <std::optional<EntityHeader>>                        entity_header
-%nterm <EntityNameList>                                     entity_name_list
-%nterm <std::vector<EntityDesignator>>                      entity_name_list.entity_designator_mul
-%nterm <EntitySpecification>                                entity_specification
-%nterm <EntityStatement>                                    entity_statement
-%nterm <std::vector<EntityStatement>>                       entity_statement_part
-%nterm <EntityTag>                                          entity_tag
-%nterm <EnumerationLiteral>                                 enumeration_literal
-%nterm <std::vector<EnumerationLiteral>>                    enumeration_type_definition
-%nterm <std::vector<EnumerationLiteral>>                    enumeration_type_definition.inner
-%nterm <ExitStatement>                                      exit_statement
-%nterm <std::optional<Expression>>                          exit_statement.when_condition_opt
-%nterm <ExpandedSelectedName>                               expanded_selected_name
-%nterm <SimplePrefix>                                       simple_prefix
-%nterm <Expression>                                         expression
-%nterm <std::vector<Relation>>                              expression.and_relation_mul
-%nterm <std::vector<Relation>>                              expression.or_relation_mul
-%nterm <std::vector<Relation>>                              expression.xor_relation_mul
-%nterm <std::vector<Relation>>                              expression.xnor_relation_mul
-%nterm <Factor>                                             factor
-%nterm <FileDeclaration>                                    file_declaration
-%nterm <Expression>                                         file_logical_name
-%nterm <Expression>                                         file_open_kind_expression
-%nterm <FileOpenInformation>                                file_open_information
-%nterm <FileTypeDefinition>                                 file_type_definition
-%nterm <Name>                                               formal_designator
-%nterm <std::vector<InterfaceDeclaration>>                  formal_parameter_list
-%nterm <FormalPart>                                         formal_part
-%nterm <TypeDeclaration>                                    full_type_declaration
-%nterm <FunctionCall>                                       function_call
-%nterm <GenerateStatement>                                  generate_statement
-%nterm <std::vector<BlockDeclarativeItem>>                  generate_statement.block_declarative_statement_opt
-%nterm <std::vector<BlockDeclarativeItem>>                  generate_statement.block_declarative_statement_opt.block_declarative_item_mopt
-%nterm <std::vector<ConcurrentStatement>>                   generate_statement.concurrent_statement_mopt
-%nterm <GenerationScheme>                                   generation_scheme
-%nterm <GenericClause>                                      generic_clause
-%nterm <std::vector<AssociationElement>>                    generic_map_aspect
-%nterm <std::optional<std::vector<AssociationElement>>>     generic_map_aspect_opt
-%nterm <GroupConstituent>                                   group_constituent
-%nterm <std::vector<GroupConstituent>>                      group_constituent_list
-%nterm <GroupDeclaration>                                   group_declaration
-%nterm <GroupTemplateDeclaration>                           group_template_declaration
-%nterm <GuardedSignalSpecification>                         guarded_signal_specification
-%nterm <Identifier>                                         identifier
-%nterm <std::vector<Identifier>>                            identifier_list
-%nterm <IfStatement>                                        if_statement
-%nterm <std::vector<IfStatementPair>>                       if_statement.elsif_condition_mopt
-%nterm <std::vector<SequentialStatement>>                   if_statement.else_opt
-%nterm <TypeDeclaration>                                    incomplete_type_declaration
-%nterm <std::vector<DiscreteRange>>                         index_constraint
-%nterm <std::vector<DiscreteRange>>                         index_constraint.discrete_range_mul
-%nterm <IndexSpecification>                                 index_specification
-%nterm <Name>                                               index_subtype_definition
-%nterm <std::vector<Name>>                                  index_subtype_definition_mul
-%nterm <IndexedName>                                        indexed_name
-%nterm <std::vector<Expression>>                            indexed_name.expression_mul
-%nterm <std::unique_ptr<Expression>>                        init_expression_opt
-%nterm <InstantiatedUnit>                                   instantiated_unit
-%nterm <InstantiationList>                                  instantiation_list
-%nterm <std::vector<Identifier>>                            instantiation_list.label_mul
-%nterm <InterfaceConstantDeclaration>                       interface_constant_declaration
-%nterm <std::vector<InterfaceConstantDeclaration>>          interface_constant_declaration_list
-%nterm <InterfaceDeclaration>                               interface_declaration
-%nterm <InterfaceDeclaration>                               interface_element
-%nterm <InterfaceFileDeclaration>                           interface_file_declaration
-%nterm <std::vector<InterfaceDeclaration>>                  interface_list
-%nterm <InterfaceSignalDeclaration>                         interface_signal_declaration
-%nterm <InterfaceUnresolvedDeclaration>                     interface_unresolved_declaration
-%nterm <InterfaceVariableDeclaration>                       interface_variable_declaration
-%nterm <IterationScheme>                                    iteration_scheme
-%nterm <Identifier>                                         label
-%nterm <std::optional<Identifier>>                          label_colon_opt
-%nterm <std::optional<Identifier>>                          label_opt
-%nterm <std::vector<Identifier>>                            library_clause
-%nterm <LibraryUnit>                                        library_unit
-%nterm <Literal>                                            literal
-%nterm <Identifier>                                         logical_name
-%nterm <std::vector<Identifier>>                            logical_name_list
-%nterm <LoopStatement>                                      loop_statement
-%nterm <std::optional<IterationScheme>>                     loop_statement.iteration_scheme_opt
-%nterm <Mode>                                               mode
-%nterm <std::optional<Mode>>                                mode_opt
-%nterm <MulOp>                                              multiplying_operator
-%nterm <Name>                                               name
-%nterm <NextStatement>                                      next_statement
-%nterm <std::optional<Expression>>                          next_statement.when_opt
-%nterm <NullStatement>                                      null_statement
-%nterm <NumericLiteral>                                     numeric_literal
-%nterm <Options>                                            options
+%nterm <parser::AbstractLiteral>                                    abstract_literal
+%nterm <parser::AccessTypeDefinition>                               access_type_definition
+%nterm <parser::ActualDesignator>                                   actual_designator
+%nterm <parser::ActualPart>                                         actual_part
+%nterm <parser::AddingOperator>                                     adding_operator
+%nterm <parser::Aggregate>                                          aggregate
+%nterm <parser::Aggregate>                                          aggregate.element_association_mul
+%nterm <parser::AliasDeclaration>                                   alias_declaration
+%nterm <std::optional<std::unique_ptr<parser::SubtypeIndication>>>  alias_declaration.opt_subtype
+%nterm <parser::AliasDesignator>                                    alias_designator
+%nterm <parser::Allocator>                                          allocator
+%nterm <parser::ArchitectureBody>                                   architecture_body
+%nterm <std::vector<parser::BlockDeclarativeItem>>                  architecture_declarative_part
+%nterm <std::vector<parser::ConcurrentStatement>>                   architecture_statement_part
+%nterm <parser::ArrayTypeDefinition>                                array_type_definition
+%nterm <parser::Assertion>                                          assertion
+%nterm <std::unique_ptr<parser::Expression>>                        assertion.report_opt
+%nterm <std::unique_ptr<parser::Expression>>                        assertion.severity_opt
+%nterm <parser::AssertionStatement>                                 assertion_statement
+%nterm <parser::AssociationElement>                                 association_element
+%nterm <std::vector<parser::AssociationElement>>                    association_list
+%nterm <parser::AttributeDeclaration>                               attribute_declaration
+%nterm <parser::Identifier>                                         attribute_designator
+%nterm <parser::AttributeName>                                      attribute_name
+%nterm <std::unique_ptr<parser::Expression>>                        attribute_name.expression_opt
+%nterm <parser::AttributeSpecification>                             attribute_specification
+%nterm <parser::BindingIndication>                                  binding_indication
+%nterm <std::unique_ptr<parser::EntityAspect>>                      binding_indication.entity_aspect_opt
+%nterm <parser::BlockConfiguration>                                 block_configuration
+%nterm <std::vector<parser::UseClause>>                             block_configuration.use_clause_mopt
+%nterm <std::vector<parser::ConfigurationItem>>                     block_configuration.configuration_item_mopt
+%nterm <parser::BlockDeclarativeItem>                               block_declarative_item
+%nterm <std::vector<parser::BlockDeclarativeItem>>                  block_declarative_part
+%nterm <parser::BlockHeader>                                        block_header
+%nterm <parser::BlockHeaderGenericClause>                           block_header.generic_clause
+%nterm <parser::BlockHeaderPortClause>                              block_header.port_clause
+%nterm <parser::BlockSpecification>                                 block_specification
+%nterm <parser::BlockStatement>                                     block_statement
+%nterm <std::unique_ptr<parser::Expression>>                        block_statement.guard_expression_opt
+%nterm <std::vector<parser::ConcurrentStatement>>                   block_statement_part
+%nterm <bool>                                                       bus_opt
+%nterm <parser::CaseStatement>                                      case_statement
+%nterm <std::vector<parser::CaseAlternative>>                       case_statement.case_statement_alternative_mul
+%nterm <parser::CaseAlternative>                                    case_statement_alternative
+%nterm <parser::Choice>                                             choice
+%nterm <std::vector<parser::Choice>>                                choices
+%nterm <parser::ComponentConfiguration>                             component_configuration
+%nterm <std::optional<parser::BindingIndication>>                   component_configuration.binding_indication_opt
+%nterm <std::optional<parser::BlockConfiguration>>                  component_configuration.block_configuration_opt
+%nterm <parser::ComponentDeclaration>                               component_declaration
+%nterm <std::optional<parser::GenericClause>>                       component_declaration.local_generic_clause_opt
+%nterm <std::optional<parser::PortClause>>                          component_declaration.local_port_clause_opt
+%nterm <parser::ComponentInstantiation>                             component_instantiation_statement
+%nterm <parser::ComponentSpecification>                             component_specification
+%nterm <parser::CompositeTypeDefinition>                            composite_type_definition
+%nterm <parser::ConcurrentAssertion>                                concurrent_assertion_statement
+%nterm <bool>                                                       postponed_opt
+%nterm <parser::ConcurrentSignalAssignment>                         concurrent_procedure_call_statement
+%nterm <parser::ConcurrentSelectedSignalAssignment>                 concurrent_signal_assignment_statement
+%nterm <parser::ConcurrentStatement>                                concurrent_statement
+%nterm <parser::Expression>                                         condition
+%nterm <parser::ConditionClause>                                    condition_clause
+%nterm <parser::ConditionalSignalAssignment>                        conditional_signal_assignment
+%nterm <parser::ConditionalWaveforms>                               conditional_waveforms
+%nterm <std::vector<parser::ConditionalWaveform>>                   conditional_waveforms.waveform_condition_mopt
+%nterm <std::unique_ptr<parser::Expression>>                        conditional_waveforms.when_condition_opt
+%nterm <parser::ConfigurationDeclaration>                           configuration_declaration
+%nterm <parser::ConfigurationDeclarativeItem>                       configuration_declarative_item
+%nterm <std::vector<parser::ConfigurationDeclarativeItem>>          configuration_declarative_part
+%nterm <parser::ConfigurationItem>                                  configuration_item
+%nterm <parser::ConfigurationSpecification>                         configuration_specification
+%nterm <parser::ConstantDeclaration>                                constant_declaration
+%nterm <std::unique_ptr<parser::Expression>>                        constant_declaration.expression_opt
+%nterm <parser::ConstrainedArrayDefinition>                         constrained_array_definition
+%nterm <parser::Constraint>                                         constraint
+%nterm <std::optional<parser::Constraint>>                          constraint_opt
+%nterm <std::vector<parser::ContextItem>>                           context_clause
+%nterm <parser::ContextItem>                                        context_item
+%nterm <parser::DelayMechanism>                                     delay_mechanism
+%nterm <std::vector<parser::DesignUnit>>                            design_file
+%nterm <parser::DesignUnit>                                         design_unit
+%nterm <parser::Designator>                                         designator
+%nterm <std::optional<parser::Designator>>                          designator_opt
+%nterm <parser::Direction>                                          direction
+%nterm <parser::DisconnectionSpecification>                         disconnection_specification
+%nterm <parser::DiscreteRange>                                      discrete_range
+%nterm <parser::ElementAssociation>                                 element_association
+%nterm <parser::ElementDeclaration>                                 element_declaration
+%nterm <parser::SubtypeIndication>                                  element_subtype_definition
+%nterm <parser::EntityAspect>                                       entity_aspect
+%nterm <parser::EntityClass>                                        entity_class
+%nterm <parser::EntityClassEntry>                                   entity_class_entry
+%nterm <std::vector<parser::EntityClassEntry>>                      entity_class_entry_list
+%nterm <parser::EntityDeclaration>                                  entity_declaration
+%nterm <std::vector<parser::EntityStatement>>                       entity_declaration.entity_statement_part_opt
+%nterm <parser::EntityDeclarativeItem>                              entity_declarative_item
+%nterm <std::vector<parser::EntityDeclarativeItem>>                 entity_declarative_part
+%nterm <parser::EntityDesignator>                                   entity_designator
+%nterm <std::optional<parser::EntityHeader>>                        entity_header
+%nterm <parser::EntityNameList>                                     entity_name_list
+%nterm <std::vector<parser::EntityDesignator>>                      entity_name_list.entity_designator_mul
+%nterm <parser::EntitySpecification>                                entity_specification
+%nterm <parser::EntityStatement>                                    entity_statement
+%nterm <std::vector<parser::EntityStatement>>                       entity_statement_part
+%nterm <parser::EntityTag>                                          entity_tag
+%nterm <parser::EnumerationLiteral>                                 enumeration_literal
+%nterm <std::vector<parser::EnumerationLiteral>>                    enumeration_type_definition
+%nterm <std::vector<parser::EnumerationLiteral>>                    enumeration_type_definition.inner
+%nterm <parser::ExitStatement>                                      exit_statement
+%nterm <std::optional<parser::Expression>>                          exit_statement.when_condition_opt
+%nterm <parser::ExpandedSelectedName>                               expanded_selected_name
+%nterm <parser::SimplePrefix>                                       simple_prefix
+%nterm <parser::Expression>                                         expression
+%nterm <std::vector<parser::Relation>>                              expression.and_relation_mul
+%nterm <std::vector<parser::Relation>>                              expression.or_relation_mul
+%nterm <std::vector<parser::Relation>>                              expression.xor_relation_mul
+%nterm <std::vector<parser::Relation>>                              expression.xnor_relation_mul
+%nterm <parser::Factor>                                             factor
+%nterm <parser::FileDeclaration>                                    file_declaration
+%nterm <parser::Expression>                                         file_logical_name
+%nterm <parser::Expression>                                         file_open_kind_expression
+%nterm <parser::FileOpenInformation>                                file_open_information
+%nterm <parser::FileTypeDefinition>                                 file_type_definition
+%nterm <parser::Name>                                               formal_designator
+%nterm <std::vector<parser::InterfaceDeclaration>>                  formal_parameter_list
+%nterm <parser::FormalPart>                                         formal_part
+%nterm <parser::TypeDeclaration>                                    full_type_declaration
+%nterm <parser::FunctionCall>                                       function_call
+%nterm <parser::GenerateStatement>                                  generate_statement
+%nterm <std::vector<parser::BlockDeclarativeItem>>                  generate_statement.block_declarative_statement_opt
+%nterm <std::vector<parser::BlockDeclarativeItem>>                  generate_statement.block_declarative_statement_opt.block_declarative_item_mopt
+%nterm <std::vector<parser::ConcurrentStatement>>                   generate_statement.concurrent_statement_mopt
+%nterm <parser::GenerationScheme>                                   generation_scheme
+%nterm <parser::GenericClause>                                      generic_clause
+%nterm <std::vector<parser::AssociationElement>>                    generic_map_aspect
+%nterm <std::optional<std::vector<parser::AssociationElement>>>     generic_map_aspect_opt
+%nterm <parser::GroupConstituent>                                   group_constituent
+%nterm <std::vector<parser::GroupConstituent>>                      group_constituent_list
+%nterm <parser::GroupDeclaration>                                   group_declaration
+%nterm <parser::GroupTemplateDeclaration>                           group_template_declaration
+%nterm <parser::GuardedSignalSpecification>                         guarded_signal_specification
+%nterm <parser::Identifier>                                         identifier
+%nterm <std::vector<parser::Identifier>>                            identifier_list
+%nterm <parser::IfStatement>                                        if_statement
+%nterm <std::vector<parser::IfStatementPair>>                       if_statement.elsif_condition_mopt
+%nterm <std::vector<parser::SequentialStatement>>                   if_statement.else_opt
+%nterm <parser::TypeDeclaration>                                    incomplete_type_declaration
+%nterm <std::vector<parser::DiscreteRange>>                         index_constraint
+%nterm <std::vector<parser::DiscreteRange>>                         index_constraint.discrete_range_mul
+%nterm <parser::IndexSpecification>                                 index_specification
+%nterm <parser::Name>                                               index_subtype_definition
+%nterm <std::vector<parser::Name>>                                  index_subtype_definition_mul
+%nterm <parser::IndexedName>                                        indexed_name
+%nterm <std::vector<parser::Expression>>                            indexed_name.expression_mul
+%nterm <std::unique_ptr<parser::Expression>>                        init_expression_opt
+%nterm <parser::InstantiatedUnit>                                   instantiated_unit
+%nterm <parser::InstantiationList>                                  instantiation_list
+%nterm <std::vector<parser::Identifier>>                            instantiation_list.label_mul
+%nterm <parser::InterfaceConstantDeclaration>                       interface_constant_declaration
+%nterm <std::vector<parser::InterfaceConstantDeclaration>>          interface_constant_declaration_list
+%nterm <parser::InterfaceDeclaration>                               interface_declaration
+%nterm <parser::InterfaceDeclaration>                               interface_element
+%nterm <parser::InterfaceFileDeclaration>                           interface_file_declaration
+%nterm <std::vector<parser::InterfaceDeclaration>>                  interface_list
+%nterm <parser::InterfaceSignalDeclaration>                         interface_signal_declaration
+%nterm <parser::InterfaceUnresolvedDeclaration>                     interface_unresolved_declaration
+%nterm <parser::InterfaceVariableDeclaration>                       interface_variable_declaration
+%nterm <parser::IterationScheme>                                    iteration_scheme
+%nterm <parser::Identifier>                                         label
+%nterm <std::optional<parser::Identifier>>                          label_colon_opt
+%nterm <std::optional<parser::Identifier>>                          label_opt
+%nterm <std::vector<parser::Identifier>>                            library_clause
+%nterm <parser::LibraryUnit>                                        library_unit
+%nterm <parser::Literal>                                            literal
+%nterm <parser::Identifier>                                         logical_name
+%nterm <std::vector<parser::Identifier>>                            logical_name_list
+%nterm <parser::LoopStatement>                                      loop_statement
+%nterm <std::optional<parser::IterationScheme>>                     loop_statement.iteration_scheme_opt
+%nterm <parser::Mode>                                               mode
+%nterm <std::optional<parser::Mode>>                                mode_opt
+%nterm <parser::MulOp>                                              multiplying_operator
+%nterm <parser::Name>                                               name
+%nterm <parser::NextStatement>                                      next_statement
+%nterm <std::optional<parser::Expression>>                          next_statement.when_opt
+%nterm <parser::NullStatement>                                      null_statement
+%nterm <parser::NumericLiteral>                                     numeric_literal
+%nterm <parser::Options>                                            options
 %nterm <bool>                                               options.guarded_opt
-%nterm <std::optional<DelayMechanism>>                      options.delay_mechanism_opt 
-%nterm <PackageBody>                                        package_body
-%nterm <PackageBodyDeclarativeItem>                         package_body_declarative_item
-%nterm <std::vector<PackageBodyDeclarativeItem>>            package_body_declarative_part
-%nterm <PackageDeclaration>                                 package_declaration
-%nterm <PackageDeclarativeItem>                             package_declarative_item
-%nterm <std::vector<PackageDeclarativeItem>>                package_declarative_part
-%nterm <ParameterSpecification>                             parameter_specification
-%nterm <PhysicalLiteral>                                    physical_literal
-%nterm <PhysicalTypeDefinition>                             physical_type_definition
-%nterm <std::vector<SecondaryUnitDeclaration>>              physical_type_definition.secondary_unit_declaration_mopt
-%nterm <PortClause>                                         port_clause
-%nterm <InterfaceSignalDeclaration>                         port_interface_declaration
-%nterm <InterfaceSignalDeclaration>                         port_interface_element
-%nterm <std::vector<InterfaceSignalDeclaration>>            port_interface_list
-%nterm <std::vector<InterfaceSignalDeclaration>>            port_list
-%nterm <PortMapAspect>                                      port_map_aspect
-%nterm <std::optional<PortMapAspect>>                       port_map_aspect_opt
-%nterm <Prefix>                                             prefix
-%nterm <Primary>                                            primary
-%nterm <PrimaryUnit>                                        primary_unit
-%nterm <Identifier>                                         primary_unit_declaration
-%nterm <ProcedureCall>                                      procedure_call
-%nterm <ProcedureCallStatement>                             procedure_call_statement
-%nterm <ProcessDeclarativeItem>                             process_declarative_item
-%nterm <std::vector<ProcessDeclarativeItem>>                process_declarative_part
-%nterm <ProcessStatement>                                   process_statement
+%nterm <std::optional<parser::DelayMechanism>>                      options.delay_mechanism_opt 
+%nterm <parser::PackageBody>                                        package_body
+%nterm <parser::PackageBodyDeclarativeItem>                         package_body_declarative_item
+%nterm <std::vector<parser::PackageBodyDeclarativeItem>>            package_body_declarative_part
+%nterm <parser::PackageDeclaration>                                 package_declaration
+%nterm <parser::PackageDeclarativeItem>                             package_declarative_item
+%nterm <std::vector<parser::PackageDeclarativeItem>>                package_declarative_part
+%nterm <parser::ParameterSpecification>                             parameter_specification
+%nterm <parser::PhysicalLiteral>                                    physical_literal
+%nterm <parser::PhysicalTypeDefinition>                             physical_type_definition
+%nterm <std::vector<parser::SecondaryUnitDeclaration>>              physical_type_definition.secondary_unit_declaration_mopt
+%nterm <parser::PortClause>                                         port_clause
+%nterm <parser::InterfaceSignalDeclaration>                         port_interface_declaration
+%nterm <parser::InterfaceSignalDeclaration>                         port_interface_element
+%nterm <std::vector<parser::InterfaceSignalDeclaration>>            port_interface_list
+%nterm <std::vector<parser::InterfaceSignalDeclaration>>            port_list
+%nterm <parser::PortMapAspect>                                      port_map_aspect
+%nterm <std::optional<parser::PortMapAspect>>                       port_map_aspect_opt
+%nterm <parser::Prefix>                                             prefix
+%nterm <parser::Primary>                                            primary
+%nterm <parser::PrimaryUnit>                                        primary_unit
+%nterm <parser::Identifier>                                         primary_unit_declaration
+%nterm <parser::ProcedureCall>                                      procedure_call
+%nterm <parser::ProcedureCallStatement>                             procedure_call_statement
+%nterm <parser::ProcessDeclarativeItem>                             process_declarative_item
+%nterm <std::vector<parser::ProcessDeclarativeItem>>                process_declarative_part
+%nterm <parser::ProcessStatement>                                   process_statement
 %nterm <bool>                                               process_statement.postponed_opt
-%nterm <std::optional<std::vector<Name>>>                   process_statement.sensitivity_list_opt
-%nterm <std::vector<SequentialStatement>>                   process_statement_part
-%nterm <ProtectedTypeBody>                                  protected_type_body
-%nterm <ProtectedTypeBodyDeclarativeItem>                   protected_type_body_declarative_item
-%nterm <std::vector<ProtectedTypeBodyDeclarativeItem>>      protected_type_body_declarative_part
-%nterm <ProtectedTypeDeclaration>                           protected_type_declaration
-%nterm <ProtectedTypeDeclarativeItem>                       protected_type_declarative_item
-%nterm <std::vector<ProtectedTypeDeclarativeItem>>          protected_type_declarative_part
-%nterm <ProtectedTypeDefinition>                            protected_type_definition
-%nterm <QualifiedExpression>                                qualified_expression
-%nterm <SimpleRange>                                        range
-%nterm <SimpleRange>                                        range_constraint
-%nterm <RecordTypeDefinition>                               record_type_definition
-%nterm <std::vector<ElementDeclaration>>                    record_type_definition.element_declaration_mul
-%nterm <Relation>                                           relation
-%nterm <RelOp>                                              relational_operator
-%nterm <ReportStatement>                                    report_statement
-%nterm <std::optional<Designator>>                          resolution_function_name_opt
-%nterm <ReturnStatement>                                    return_statement
-%nterm <ScalarTypeDefinition>                               scalar_type_definition
-%nterm <SecondaryUnit>                                      secondary_unit
-%nterm <SecondaryUnitDeclaration>                           secondary_unit_declaration
-%nterm <SelectedName>                                       selected_name
-%nterm <SelectedSignalAssignment>                           selected_signal_assignment
-%nterm <std::vector<SelectedWaveform>>                      selected_waveforms
-%nterm <std::vector<Name>>                                  sensitivity_clause
-%nterm <std::vector<Name>>                                  sensitivity_list
-%nterm <std::vector<SequentialStatement>>                   sequence_of_statements
-%nterm <SequentialStatement>                                sequential_statement
-%nterm <ShiftExpression>                                    shift_expression
-%nterm <ShiftOperator>                                      shift_operator
-%nterm <Sign>                                               sign
-%nterm <SignalAssignmentStatement>                          signal_assignment_statement
-%nterm <std::optional<DelayMechanism>>                      signal_assignment_statement.delay_mechanism_opt
-%nterm <SignalDeclaration>                                  signal_declaration
-%nterm <std::optional<SignalKind>>                          signal_declaration.signal_kind_opt
-%nterm <SignalKind>                                         signal_kind
-%nterm <SignalList>                                         signal_list
-%nterm <std::vector<Name>>                                  signal_list.name_mul
-%nterm <std::optional<Signature>>                           signature
-%nterm <std::vector<Name>>                                  signature.type_mark_mul
-%nterm <SimpleExpression>                                   simple_expression
-%nterm <std::optional<Sign>>                                simple_expression.sign_opt
-%nterm <std::vector<TermOpPair>>                            simple_expression.adding_operator_mopt
-%nterm <Identifier>                                         simple_name
-%nterm <std::optional<Identifier>>                          simple_name_opt
-%nterm <SliceName>                                          slice_name
-%nterm <SubprogramBody>                                     subprogram_body
-%nterm <std::optional<SubprogramKind>>                      subprogram_body.subprogram_kind_opt
-%nterm <SubprogramSpecification>                            subprogram_declaration
-%nterm <SubprogramDeclarativeItem>                          subprogram_declarative_item
-%nterm <std::vector<SubprogramDeclarativeItem>>             subprogram_declarative_part
-%nterm <SubprogramKind>                                     subprogram_kind
-%nterm <SubprogramSpecification>                            subprogram_specification
-%nterm <std::optional<FunctionType>>                        function_type
-%nterm <std::vector<SequentialStatement>>                   subprogram_statement_part
-%nterm <SubtypeDeclaration>                                 subtype_declaration
-%nterm <SubtypeIndication>                                  subtype_indication
-%nterm <Suffix>                                             suffix
-%nterm <Target>                                             target
-%nterm <Term>                                               term
-%nterm <Expression>                                         time_expression
-%nterm <Expression>                                         timeout_clause
-%nterm <TypeConversion>                                     type_conversion
-%nterm <TypeDeclaration>                                    type_declaration
-%nterm <TypeDefinition>                                     type_definition
-%nterm <Name>                                               type_mark
-%nterm <UnconstrainedArrayDefinition>                       unconstrained_array_definition
-%nterm <UseClause>                                          use_clause
-%nterm <std::vector<ExpandedSelectedName>>                  use_clause.selected_name_mul
-%nterm <Expression>                                         value_expression
-%nterm <VariableAssignmentStatement>                        variable_assignment_statement
-%nterm <VariableDeclaration>                                variable_declaration
-%nterm <PlainVariableDeclaration>                           plain_variable_declaration
-%nterm <SharedVariableDeclaration>                          shared_variable_declaration
-%nterm <WaitStatement>                                      wait_statement
-%nterm <std::optional<std::vector<Name>>>                   wait_statement.sensitivity_clause_opt
-%nterm <std::optional<ConditionClause>>                     wait_statement.condition_clause_opt
-%nterm <std::optional<Expression>>                          wait_statement.timeout_clause_opt
-%nterm <Waveform>                                           waveform
-%nterm <std::vector<WaveformElement>>                       waveform.waveform_element_mul
-%nterm <WaveformElement>                                    waveform_element
+%nterm <std::optional<std::vector<parser::Name>>>                   process_statement.sensitivity_list_opt
+%nterm <std::vector<parser::SequentialStatement>>                   process_statement_part
+%nterm <parser::ProtectedTypeBody>                                  protected_type_body
+%nterm <parser::ProtectedTypeBodyDeclarativeItem>                   protected_type_body_declarative_item
+%nterm <std::vector<parser::ProtectedTypeBodyDeclarativeItem>>      protected_type_body_declarative_part
+%nterm <parser::ProtectedTypeDeclaration>                           protected_type_declaration
+%nterm <parser::ProtectedTypeDeclarativeItem>                       protected_type_declarative_item
+%nterm <std::vector<parser::ProtectedTypeDeclarativeItem>>          protected_type_declarative_part
+%nterm <parser::ProtectedTypeDefinition>                            protected_type_definition
+%nterm <parser::QualifiedExpression>                                qualified_expression
+%nterm <parser::SimpleRange>                                        range
+%nterm <parser::SimpleRange>                                        range_constraint
+%nterm <parser::RecordTypeDefinition>                               record_type_definition
+%nterm <std::vector<parser::ElementDeclaration>>                    record_type_definition.element_declaration_mul
+%nterm <parser::Relation>                                           relation
+%nterm <parser::RelOp>                                              relational_operator
+%nterm <parser::ReportStatement>                                    report_statement
+%nterm <std::optional<parser::Designator>>                          resolution_function_name_opt
+%nterm <parser::ReturnStatement>                                    return_statement
+%nterm <parser::ScalarTypeDefinition>                               scalar_type_definition
+%nterm <parser::SecondaryUnit>                                      secondary_unit
+%nterm <parser::SecondaryUnitDeclaration>                           secondary_unit_declaration
+%nterm <parser::SelectedName>                                       selected_name
+%nterm <parser::SelectedSignalAssignment>                           selected_signal_assignment
+%nterm <std::vector<parser::SelectedWaveform>>                      selected_waveforms
+%nterm <std::vector<parser::Name>>                                  sensitivity_clause
+%nterm <std::vector<parser::Name>>                                  sensitivity_list
+%nterm <std::vector<parser::SequentialStatement>>                   sequence_of_statements
+%nterm <parser::SequentialStatement>                                sequential_statement
+%nterm <parser::ShiftExpression>                                    shift_expression
+%nterm <parser::ShiftOperator>                                      shift_operator
+%nterm <parser::Sign>                                               sign
+%nterm <parser::SignalAssignmentStatement>                          signal_assignment_statement
+%nterm <std::optional<parser::DelayMechanism>>                      signal_assignment_statement.delay_mechanism_opt
+%nterm <parser::SignalDeclaration>                                  signal_declaration
+%nterm <std::optional<parser::SignalKind>>                          signal_declaration.signal_kind_opt
+%nterm <parser::SignalKind>                                         signal_kind
+%nterm <parser::SignalList>                                         signal_list
+%nterm <std::vector<parser::Name>>                                  signal_list.name_mul
+%nterm <std::optional<parser::Signature>>                           signature
+%nterm <std::vector<parser::Name>>                                  signature.type_mark_mul
+%nterm <parser::SimpleExpression>                                   simple_expression
+%nterm <std::optional<parser::Sign>>                                simple_expression.sign_opt
+%nterm <std::vector<parser::TermOpPair>>                            simple_expression.adding_operator_mopt
+%nterm <parser::Identifier>                                         simple_name
+%nterm <std::optional<parser::Identifier>>                          simple_name_opt
+%nterm <parser::SliceName>                                          slice_name
+%nterm <parser::SubprogramBody>                                     subprogram_body
+%nterm <std::optional<parser::SubprogramKind>>                      subprogram_body.subprogram_kind_opt
+%nterm <parser::SubprogramSpecification>                            subprogram_declaration
+%nterm <parser::SubprogramDeclarativeItem>                          subprogram_declarative_item
+%nterm <std::vector<parser::SubprogramDeclarativeItem>>             subprogram_declarative_part
+%nterm <parser::SubprogramKind>                                     subprogram_kind
+%nterm <parser::SubprogramSpecification>                            subprogram_specification
+%nterm <std::optional<parser::FunctionType>>                        function_type
+%nterm <std::vector<parser::SequentialStatement>>                   subprogram_statement_part
+%nterm <parser::SubtypeDeclaration>                                 subtype_declaration
+%nterm <parser::SubtypeIndication>                                  subtype_indication
+%nterm <parser::Suffix>                                             suffix
+%nterm <parser::Target>                                             target
+%nterm <parser::Term>                                               term
+%nterm <parser::Expression>                                         time_expression
+%nterm <parser::Expression>                                         timeout_clause
+%nterm <parser::TypeConversion>                                     type_conversion
+%nterm <parser::TypeDeclaration>                                    type_declaration
+%nterm <parser::TypeDefinition>                                     type_definition
+%nterm <parser::Name>                                               type_mark
+%nterm <parser::UnconstrainedArrayDefinition>                       unconstrained_array_definition
+%nterm <parser::UseClause>                                          use_clause
+%nterm <std::vector<parser::ExpandedSelectedName>>                  use_clause.selected_name_mul
+%nterm <parser::Expression>                                         value_expression
+%nterm <parser::VariableAssignmentStatement>                        variable_assignment_statement
+%nterm <parser::VariableDeclaration>                                variable_declaration
+%nterm <parser::PlainVariableDeclaration>                           plain_variable_declaration
+%nterm <parser::SharedVariableDeclaration>                          shared_variable_declaration
+%nterm <parser::WaitStatement>                                      wait_statement
+%nterm <std::optional<std::vector<parser::Name>>>                   wait_statement.sensitivity_clause_opt
+%nterm <std::optional<parser::ConditionClause>>                     wait_statement.condition_clause_opt
+%nterm <std::optional<parser::Expression>>                          wait_statement.timeout_clause_opt
+%nterm <parser::Waveform>                                           waveform
+%nterm <std::vector<parser::WaveformElement>>                       waveform.waveform_element_mul
+%nterm <parser::WaveformElement>                                    waveform_element
 
 %%
 // FIXME: Handle operator symbols
@@ -501,8 +501,8 @@ aggregate:
   ;
 
 aggregate.element_association_mul:
-    element_association                                         { $$ = Aggregate { {}, $1 }; }
-  | aggregate.element_association_mul ',' element_association   { $1.push_back($3); $$ = $1; }
+    element_association                                         { $$ = Aggregate { $1 }; }
+  | aggregate.element_association_mul ',' element_association   { $$ = $1; $$.push_back($3); }
   ;
 
 alias_declaration:
@@ -544,13 +544,13 @@ architecture_body.architecture_opt:
   ;
 
 architecture_declarative_part:
-    %empty                                                { $$ = std::vector<BlockDeclarativeItem> {}; }
-  | architecture_declarative_part block_declarative_item  { $1.push_back($2); $$ = $1; }
+    %empty                                                { }
+  | architecture_declarative_part block_declarative_item  { $$ = $1; $$.push_back($2); }
   ;
 
 architecture_statement_part:
-    %empty                                            { $$ = std::vector<ConcurrentStatement> {}; }
-  | architecture_statement_part concurrent_statement  { $1.push_back($2); $$ = $1; }
+    %empty                                            { }
+  | architecture_statement_part concurrent_statement  { $$ = $1; $$.push_back($2); }
   ;
 
 array_type_definition:
@@ -564,12 +564,12 @@ assertion:
   ;
 
 assertion.report_opt:
-    %empty              { $$ = nullptr; }
+    %empty              { }
   | REPORT expression   { $$ = $2; }
   ;
 
 assertion.severity_opt:
-    %empty              { $$ = nullptr; }
+    %empty              { }
   | SEVERITY expression { $$ = $2; }
   ;
 
@@ -584,7 +584,7 @@ association_element:
 
 association_list:
     association_element                       { $$ = std::vector<AssociationElement> { $1 }; }
-  | association_list ',' association_element  { $1.push_back($3); $$ = $1; }
+  | association_list ',' association_element  { $$ = $1; $$.push_back($3); }
   ;
 
 attribute_declaration:
@@ -632,13 +632,13 @@ block_configuration:
   ;
 
 block_configuration.use_clause_mopt:
-    %empty                                          { $$ = std::vector<UseClause> {}; }
-  | block_configuration.use_clause_mopt use_clause  { $1.push_back($2); $$ = $1; }
+    %empty                                          { }
+  | block_configuration.use_clause_mopt use_clause  { $$ = $1; $$.push_back($2); }
   ;
 
 block_configuration.configuration_item_mopt:
-    %empty                                                          { $$ = std::vector<ConfigurationItem> {}; }
-  | block_configuration.configuration_item_mopt configuration_item  { $1.push_back($2); $$ = $1; }
+    %empty                                                          { }
+  | block_configuration.configuration_item_mopt configuration_item  { $$ = $1; $$.push_back($2); }
   ;
 
 block_declarative_item:
@@ -662,8 +662,8 @@ block_declarative_item:
   ;
 
 block_declarative_part:
-    %empty                                          { $$ = std::vector<BlockDeclarativeItem> {}; }
-  | block_declarative_part block_declarative_item   { $1.push_back($2); $$ = $1; }
+    %empty                                          {}
+  | block_declarative_part block_declarative_item   { $$ = $1; $$.push_back($2); }
   ;
 
 block_header:
@@ -716,14 +716,14 @@ block_statement:
   ;
 
 block_statement.guard_expression_opt:
-    %empty              { $$ = nullopt; }
+    %empty              { }
   // SEMANTIC: "expression" must be a GUARD (boolean) expression
   | '(' expression ')'  { $$ = $2; }
   ;
 
 block_statement_part:
-    %empty                                      { $$ = std::vector<ConcurrentStatement> {}; }
-  | block_statement_part concurrent_statement   { $1.push_back($2); $$ = $1; }
+    %empty                                      { }
+  | block_statement_part concurrent_statement   { $$ = $1; $$.push_back($2); }
   ;
 
 bus_opt:
@@ -743,7 +743,7 @@ case_statement:
 
 case_statement.case_statement_alternative_mul:
     case_statement_alternative                                                { $$ = std::vector<CaseAlternative> { $1 }; }
-  | case_statement.case_statement_alternative_mul case_statement_alternative  { $1.push_back($2); $$ = $1; }
+  | case_statement.case_statement_alternative_mul case_statement_alternative  { $$ = $1; $$.push_back($2); }
   ;
 
 case_statement_alternative:
@@ -752,7 +752,7 @@ case_statement_alternative:
   ;
 
 choice:
-    simple_expression   { $$ = std::make_unique<SimpleExpression>(std::move($1)); }
+    simple_expression   { $$ = std::make_unique<SimpleExpression>($1); }
   | discrete_range
   // SEMANTIC: "simple_name" must be an ELEMENT name
   // "simple_name" can be parsed as a simple_expression
@@ -762,7 +762,7 @@ choice:
 
 choices:
     choice              { $$ = std::vector<Choice> { $1 }; }
-  | choices '|' choice  { $1.push_back($3); $$ = $1; }
+  | choices '|' choice  { $$ = $1; $$.push_back($3); }
   ;
 
 component_configuration:
@@ -774,12 +774,12 @@ component_configuration:
   ;
 
 component_configuration.binding_indication_opt:
-    %empty                  { $$ = std::nullopt; }
+    %empty                  { }
   | binding_indication ';'
   ;
 
 component_configuration.block_configuration_opt:
-    %empty                { $$ = std::nullopt; }
+    %empty                { }
   | block_configuration
   ;
 
@@ -794,13 +794,13 @@ component_declaration:
   ;
 
 component_declaration.local_generic_clause_opt:
-    %empty          { $$ = std::nullopt; }
+    %empty          { }
     // SEMANTIC: "generic_clause" must be a LOCAL generic clause
   | generic_clause
   ;
 
 component_declaration.local_port_clause_opt:
-    %empty        { $$ = std::nullopt; }
+    %empty        { }
     // SEMANTIC: "port_clause" must be a LOCAL port clause
   | port_clause
   ;
@@ -825,11 +825,11 @@ composite_type_definition:
 
 concurrent_assertion_statement:
     // FIXME: Correct initialization
-    label_colon_opt postponed_opt assertion ';' { $$ = ConcurrentAssertion { {}, std::move($3), $1, $2 }; }
+    label_colon_opt postponed_opt assertion ';' { $$ = ConcurrentAssertion { {}, $3, $1, $2 }; }
   ;
 
 label_colon_opt:
-    %empty      { $$ = std::nullopt; }
+    %empty      { }
   | label ':'
   ;
 
@@ -840,14 +840,14 @@ postponed_opt:
 
 concurrent_procedure_call_statement:
     label_colon_opt postponed_opt procedure_call ';'
-            { $$ = ConcurrentProcedureCall { {}, std::move($3) , $1, $2 }; }
+            { $$ = ConcurrentProcedureCall { {}, $3 , $1, $2 }; }
   ;
 
 concurrent_signal_assignment_statement:
     label_colon_opt postponed_opt conditional_signal_assignment
-            { $$ = ConcurrentConditionalSignalAssignment { {}, std::move($3), $1, $2 }; }
+            { $$ = ConcurrentConditionalSignalAssignment { {}, $3, $1, $2 }; }
   | label_colon_opt postponed_opt selected_signal_assignment
-            { $$ = ConcurrentSelectedSignalAssignment { {}, std::move($3), $1, $2 }; }
+            { $$ = ConcurrentSelectedSignalAssignment { {}, $3, $1, $2 }; }
   ;
 
 concurrent_statement:
@@ -882,13 +882,13 @@ conditional_waveforms:
 
 conditional_waveforms.waveform_condition_mopt:
     %empty
-              { $$ = std::vector<ConditionalWaveform> {}; }
+              { }
   | conditional_waveforms.waveform_condition_mopt waveform WHEN condition ELSE
-              { $1.emplace_back({}, $2, $4); $$ = $1; }
+              { $$ = $1; $$.emplace_back({}, $2, $4); }
   ;
 
 conditional_waveforms.when_condition_opt:
-    %empty          { $$ = std::nulptr; }
+    %empty          { }
   | WHEN condition  { $$ = $2; }
   ;
 
@@ -916,9 +916,9 @@ configuration_declarative_item:
 
 configuration_declarative_part:
     %empty
-                { $$ = std::vector<ConfigurationDeclarativeItem> {}; }
+                { }
   | configuration_declarative_part configuration_declarative_item
-                { $1.push_back($2); $$ = $1; }
+                { $$ = $1; $$.push_back($2); }
   ;
 
 configuration_item:
@@ -938,7 +938,7 @@ constant_declaration:
   ;
 
 constant_declaration.expression_opt:
-    %empty            { $$ = nullopt; }
+    %empty            { }
   | ":=" expression   { $$ = $2; }
   ;
 
@@ -954,13 +954,13 @@ constraint:
   ;
 
 constraint_opt:
-    %empty      { $$ = std::nullopt; }
+    %empty      { }
   | constraint
   ;
 
 context_clause:
-    %empty                        { $$ = std::vector<ContextItem> {}; }
-  | context_clause context_item   { $1.push_back($2); $$ = $1; }
+    %empty                        { }
+  | context_clause context_item   { $$ = $1; $1.push_back($2); }
   ;
 
 context_item:
@@ -975,8 +975,8 @@ delay_mechanism:
   ;
 
 design_file:
-    design_unit               { $$ = std::vector<DesignUnit> { std::move($1) }; }
-  | design_file design_unit   { $1.push_back($2); $$ = $1; }
+    design_unit               { $$ = std::vector<DesignUnit> { $1 }; }
+  | design_file design_unit   { $$ = $1; $$.push_back($2); }
   ;
 
 design_unit:
@@ -989,7 +989,7 @@ designator:
   ;
 
 designator_opt:
-    %empty      { $$ = std::nullopt; }
+    %empty      { }
   | designator
   ;
 
@@ -1059,9 +1059,9 @@ entity_class_entry:
 
 entity_class_entry_list:
     entity_class_entry
-                  { $$ = std::vector<EntityClassEntry> { std::move($1) }; }
+                  { $$ = std::vector<EntityClassEntry> { $1 }; }
   | entity_class_entry_list ',' entity_class_entry
-                  { $1.push_back($3); $$ = $1; }
+                  { $$ = $1; $$.push_back($3); }
   ;
 
 
@@ -1077,7 +1077,7 @@ entity_declaration:
   ;
 
 entity_declaration.entity_statement_part_opt:
-    %empty                    { $$ = std::vector<EntityStatement> {}; }
+    %empty                    { }
   | BEGIN
       entity_statement_part   { $$ = $2; }
   ;
@@ -1107,9 +1107,9 @@ entity_declarative_item:
 
 entity_declarative_part:
     %empty
-                { $$ = std::vector<EntityDeclarativeItem> {}; }
+                { }
   | entity_declarative_part entity_declarative_item
-                { $1.push_back($2); $$ = $1; }
+                { $$ = $1; $$.push_back($2); }
   ;
 
 entity_designator:
@@ -1118,7 +1118,7 @@ entity_designator:
   ;
 
 entity_header:
-    %empty                        { $$ = std::nullopt; }
+    %empty                        { }
     // SEMANTIC: "generic_clause" must be a FORMAL generic clause
   | generic_clause                { $$ = EntityHeader { {}, $1, nullptr }; }
     // SEMANTIC: "port_clause" must be a FORMAL port clause
@@ -1138,7 +1138,7 @@ entity_name_list.entity_designator_mul:
     entity_designator
                 { $$ = std::vector<EntityDesignator> { $1 }; }
   | entity_name_list.entity_designator_mul ',' entity_designator
-                { $1.push_back($3); $$ = $1; }
+                { $$ = $1; $$.push_back($3); }
   ;
 
 entity_specification:
@@ -1155,8 +1155,8 @@ entity_statement:
   ;
 
 entity_statement_part:
-    %empty                                  { $$ = std::vector<EntityStatement> {}; }
-  | entity_statement_part entity_statement  { $1.push_back($2); $$ = $1; }
+    %empty                                  { }
+  | entity_statement_part entity_statement  { $$ = $1; $$.push_back($2); }
   ;
 
 entity_tag:
@@ -1178,7 +1178,7 @@ enumeration_type_definition.inner:
     enumeration_literal
                 { $$ = std::vector<EnumerationLiteral> { $1 }; }
   | enumeration_type_definition.inner ',' enumeration_literal
-                { $1.push_back($3); $$ = $1; }
+                { $$ = $1; $$.push_back($3); }
   ;
 
 exit_statement:
@@ -1188,7 +1188,7 @@ exit_statement:
   ;
 
 exit_statement.when_condition_opt:
-    %empty          { $$ = nullptr; }
+    %empty          { }
   | WHEN condition  { $$ = $2; }
   ;
 
@@ -1197,7 +1197,7 @@ expanded_selected_name:
   ;
 
 simple_prefix:
-    expanded_selected_name  { $$ = std::make_unique<ExpandedSelectedName>(std::move($1)); }
+    expanded_selected_name  { $$ = std::make_unique<ExpandedSelectedName>($1); }
   | simple_name
   ;
 
@@ -1214,25 +1214,25 @@ expression:
 expression.and_relation_mul:
     AND relation                              
               { auto temp { std::vector<Relation>(1) }; temp.push_back($2); $$ = std::move(temp); }
-  | expression.and_relation_mul AND relation    { $1.push_back($3); $$ = $1; }
+  | expression.and_relation_mul AND relation    { $$ = $1; $$.push_back($3); }
   ;
 
 expression.or_relation_mul:
     OR relation
               { auto temp { std::vector<Relation>(1) }; temp.push_back($2); $$ = std::move(temp); }
-  | expression.or_relation_mul OR relation      {$1.push_back($3); $$ = $1; }
+  | expression.or_relation_mul OR relation      { $$ = $1; $$.push_back($3); }
   ;
 
 expression.xor_relation_mul:
     XOR relation
               { auto temp { std::vector<Relation>(1) }; temp.push_back($2); $$ = std::move(temp); }
-  | expression.xor_relation_mul XOR relation    { $1.push_back($3); $$ = $1; }
+  | expression.xor_relation_mul XOR relation    { $$ = $1; $$.push_back($3); }
   ;
 
 expression.xnor_relation_mul:
     XNOR relation
               { auto temp { std::vector<Relation>(1) }; temp.push_back($2); $$ = std::move(temp); }
-  | expression.xnor_relation_mul XNOR relation  { $1.push_back($3); $$ = $1; }
+  | expression.xnor_relation_mul XNOR relation  { $$ = $1; $$.push_back($3); }
   ;
 
 factor:
@@ -1316,28 +1316,28 @@ generate_statement:
 
 generate_statement.block_declarative_statement_opt:
     %empty
-              { $$ = std::vector<BlockDeclarativeItem> {}; }
+              { }
   | generate_statement.block_declarative_statement_opt.block_declarative_item_mopt BEGIN
   ;
 
 generate_statement.block_declarative_statement_opt.block_declarative_item_mopt:
     %empty
-              { $$ = std::vector<BlockDeclarativeItem> {}; }
+              { }
   | generate_statement.block_declarative_statement_opt.block_declarative_item_mopt block_declarative_item
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 generate_statement.concurrent_statement_mopt:
     %empty
-              { $$ = std::vector<ConcurrentStatement> {}; }
+              { }
   | generate_statement.concurrent_statement_mopt concurrent_statement
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 generation_scheme:
     // SEMANTIC: "parameter_specification" must be a GENERATION parameter specification
     FOR parameter_specification   { $$ = $2; }
-  | IF condition                  { $$ = std::make_unique<Expression> { std::move($2) }; }
+  | IF condition                  { $$ = std::make_unique<Expression> { $2 }; }
   ;
 
 generic_clause:
@@ -1351,7 +1351,7 @@ generic_map_aspect:
   ;
 
 generic_map_aspect_opt:
-    %empty              { $$ = std::nullopt; }
+    %empty              { }
   | generic_map_aspect
   ;
 
@@ -1364,7 +1364,7 @@ group_constituent_list:
     group_constituent
               { $$ = std::vector<GroupConstituent> { $1 }; }
   | group_constituent_list ',' group_constituent
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 group_declaration:
@@ -1390,7 +1390,7 @@ identifier:
 
 identifier_list:
     identifier                      { $$ = std::vector<Identifier> { $1 }; }
-  | identifier_list ',' identifier  { $1.push_back($3); $$ = $1; }
+  | identifier_list ',' identifier  { $$ = $1; $$.push_back($3); }
   ;
 
 if_statement:
@@ -1409,11 +1409,11 @@ if_statement.elsif_condition_mopt:
     %empty
               { $$ = std::vector<IfStatementPair>(1); }
   | if_statement.elsif_condition_mopt ELSIF condition THEN sequence_of_statements
-              { $1.push_back({ $3, $5 }); $$ = $1; }
+              { $$ = $1; $$.push_back({ $3, $5 }); }
   ;
 
 if_statement.else_opt:
-    %empty                        { $$ = std::vector<SequentialStatement> {}; }
+    %empty                        { }
   | ELSE sequence_of_statements   { $$ = $2; }
   ;
 
@@ -1429,7 +1429,7 @@ index_constraint.discrete_range_mul:
     discrete_range
               { $$ = std::vector<DiscreteRange> { $1 }; }
   | index_constraint.discrete_range_mul ',' discrete_range
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 index_specification:
@@ -1446,7 +1446,7 @@ index_subtype_definition_mul:
     index_subtype_definition
               { $$ = std::vector<Name> { $1 }; }
   | index_subtype_definition_mul ',' index_subtype_definition
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 indexed_name:
@@ -1458,11 +1458,11 @@ indexed_name.expression_mul:
     expression
               { $$ = std::vector<Expression> { $1 }; }
   | indexed_name.expression_mul ',' expression
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 init_expression_opt:
-    %empty            { std::nullopt; }
+    %empty            { }
   | ":=" expression   { $$ = $2; }
   ;
 
@@ -1492,7 +1492,7 @@ instantiation_list.label_mul:
     label
               { $$ = std::vector<Identifier> { $1 }; }
   | instantiation_list.label_mul ',' label
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 interface_constant_declaration:
@@ -1507,7 +1507,7 @@ interface_constant_declaration_list:
     interface_constant_declaration
               { $$ = std::vector<InterfaceConstantDeclaration> { $1 }; }
   | interface_constant_declaration_list ';' interface_constant_declaration
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 interface_constant_declaration.in_opt:
@@ -1536,7 +1536,7 @@ interface_list:
     interface_element
               { $$ = std::vector<InterfaceDeclaration> { $1 }; }
   | interface_list ';' interface_element
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 interface_signal_declaration:
@@ -1574,7 +1574,7 @@ label:
   ;
 
 label_opt:
-    %empty    { $$ = std::nullopt; }
+    %empty    { }
   | label
   ;
 
@@ -1603,7 +1603,7 @@ logical_name_list:
     logical_name
               { $$ = std::vector<Identifier> { $1 }; }
   | logical_name_list ',' logical_name
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 loop_statement:
@@ -1617,7 +1617,7 @@ loop_statement:
   ;
 
 loop_statement.iteration_scheme_opt:
-    %empty            { std::nullopt; }
+    %empty            { }
   | iteration_scheme
   ;
 
@@ -1630,7 +1630,7 @@ mode:
   ;
 
 mode_opt:
-    %empty    { $$ = std::nullopt; }
+    %empty    { }
   | mode
   ;
 
@@ -1657,7 +1657,7 @@ next_statement:
   ;
 
 next_statement.when_opt:
-    %empty          { $$ = std::nullopt; }
+    %empty          { }
   | WHEN condition  { $$ = $2; }
   ;
 
@@ -1681,7 +1681,7 @@ options.guarded_opt:
   ;
 
 options.delay_mechanism_opt:
-    %empty            { std::nullopt; }
+    %empty            { }
   | delay_mechanism
   ;
 
@@ -1715,9 +1715,9 @@ package_body_declarative_item:
 
 package_body_declarative_part:
     %empty
-              { $$ = std::vector<PackageBodyDeclarativeItem> {}; }
+              { }
   | package_body_declarative_part package_body_declarative_item
-              { $1.push_back($2), $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 package_declaration:
@@ -1754,9 +1754,9 @@ package_declarative_item:
 
 package_declarative_part:
     %empty
-            { $$ = std::vector<PackageDeclarativeItem> {}; }
+            { }
   | package_declarative_part package_declarative_item
-            { $1.push_back($2); $$ = $1; }
+            { $$ = $1; $$.push_back($2); }
   ;
 
 parameter_specification:
@@ -1783,9 +1783,9 @@ physical_type_definition:
 
 physical_type_definition.secondary_unit_declaration_mopt:
     %empty
-              { $$ = std::vector<SecondaryUnitDeclaration> {}; }
+              { }
   | physical_type_definition.secondary_unit_declaration_mopt secondary_unit_declaration
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 port_clause:
@@ -1804,7 +1804,7 @@ port_interface_list:
     port_interface_element
               { $$ = std::vector<InterfaceSignalDeclaration> { $1 }; }
   | port_interface_list ';' port_interface_element
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 port_list:
@@ -1817,7 +1817,7 @@ port_map_aspect:
   ;
 
 port_map_aspect_opt:
-    %empty            { $$ = std::nullopt; }
+    %empty            { }
   | port_map_aspect
   ;
 
@@ -1879,7 +1879,7 @@ process_declarative_part:
     %empty
               { $$ = std::vector<ProcessDeclarativeItem> {}; }
   | process_declarative_part process_declarative_item
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 process_statement:
@@ -1901,15 +1901,15 @@ process_statement.postponed_opt:
   ;
 
 process_statement.sensitivity_list_opt:
-    %empty                    { $$ = std::nullopt; }
+    %empty                    { }
   | '(' sensitivity_list ')'  { $$ = $2; }
   ;
 
 process_statement_part:
     %empty
-            { $$ = std::vector<SequentialStatement> {}; }
+            { }
   | process_statement_part sequential_statement
-            { $1.push_back($2); $$ = $1; }
+            { $$ = $1; $$.push_back($2); }
   ;
 
 protected_type_body:
@@ -1938,9 +1938,9 @@ protected_type_body_declarative_item:
 
 protected_type_body_declarative_part:
     %empty
-              { $$ = std::vector<ProtectedTypeBodyDeclarativeItem> {}; }
+              { }
   | protected_type_body_declarative_part protected_type_body_declarative_item
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 protected_type_declaration:
@@ -1960,9 +1960,9 @@ protected_type_declarative_item:
 
 protected_type_declarative_part:
     %empty
-              { $$ = std::vector<ProtectedTypeDeclarativeItem> {}; }
+              { }
   | protected_type_declarative_part protected_type_declarative_item
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 protected_type_definition:
@@ -1999,7 +1999,7 @@ record_type_definition.element_declaration_mul:
     element_declaration
               { $$ = std::vector<ElementDeclaration> { $1 }; }
   | record_type_definition.element_declaration_mul element_declaration
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 relation:
@@ -2071,7 +2071,7 @@ selected_waveforms:
     waveform WHEN choices
               { $$ = std::vector<SelectedWaveform> { SelectedWaveform { {}, $1, $3 } }; }
   | selected_waveforms ',' waveform WHEN choices
-              { $1.emplace_back<SelectedWaveform>($3, $5); $$ = $1; }
+              { $$ = $1; $$.emplace_back<SelectedWaveform>($3, $5); }
   ;
 
 sensitivity_clause:
@@ -2083,14 +2083,14 @@ sensitivity_list:
     name
               { $$ = std::vector<Name> { $1 }; }
   | sensitivity_list ',' name
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 sequence_of_statements:
     %empty
-              { $$ = std::vector<SequentialStatement> {}; }
+              { }
   | sequence_of_statements sequential_statement
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 sequential_statement:
@@ -2136,7 +2136,7 @@ signal_assignment_statement:
   ;
 
 signal_assignment_statement.delay_mechanism_opt:
-    %empty            { $$ = std::nullopt; }
+    %empty            { }
   | delay_mechanism
   ;
 
@@ -2146,7 +2146,7 @@ signal_declaration:
   ;
 
 signal_declaration.signal_kind_opt:
-    %empty        { $$ = std::nullopt; }
+    %empty        { }
   | signal_kind
   ;
 
@@ -2166,11 +2166,11 @@ signal_list.name_mul:
     name
                 { $$ = std::vector<Name> { $1 }; }
   | signal_list.name_mul ',' name
-                { $1.push_back($3); $$ = $1; }
+                { $$ = $1; $$.push_back($3); }
   ;
 
 signature:
-    %empty                                            { $$ = std::nullopt; }
+    %empty                                            { }
   | '[' signature.type_mark_mul ']'                   { $$ = Signature { {}, $2, std::nullopt }; }
   | '[' RETURN type_mark ']'                          { $$ = Signature { {}, std::nullopt, $3 }; }
   | '[' signature.type_mark_mul RETURN type_mark ']'  { $$ = Signature { {}, $2, $4 }; }
@@ -2180,7 +2180,7 @@ signature.type_mark_mul:
     type_mark
               { $$ = std::vector<Name> { $1 }; }
   | signature.type_mark_mul ',' type_mark
-              { $1.push_back($3); $$ = $1; }
+              { $$ = $1; $$.push_back($3); }
   ;
 
 simple_expression:
@@ -2189,15 +2189,15 @@ simple_expression:
   ;
 
 simple_expression.sign_opt:
-    %empty    { $$ = std::nullopt; }
+    %empty    { }
   | sign
   ;
 
 simple_expression.adding_operator_mopt:
     %empty
-              { $$ = std::vector<TermOpPair> {}; }
+              { }
   | simple_expression.adding_operator_mopt adding_operator term
-              { $1.push_back(std::make_pair($2, $3)); $$ = $1; }
+              { $$ = $1; $$.push_back(std::make_pair($2, $3)); }
   ;
 
 simple_name:
@@ -2205,7 +2205,7 @@ simple_name:
   ;
 
 simple_name_opt:
-    %empty        { $$ = std::nullopt; }
+    %empty        { }
   | simple_name
   ;
 
@@ -2223,7 +2223,7 @@ subprogram_body:
   ;
 
 subprogram_body.subprogram_kind_opt:
-    %empty            { $$ = std::nullopt; }
+    %empty            { }
   | subprogram_kind
   ;
 
@@ -2249,9 +2249,9 @@ subprogram_declarative_item:
 
 subprogram_declarative_part:
     %empty
-              { $$ = std::vector<SubprogramDeclarativeItem> {}; }
+              { }
   | subprogram_declarative_part subprogram_declarative_item
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 subprogram_kind:
@@ -2271,16 +2271,16 @@ subprogram_specification:
   ;
 
 function_type:
-    %empty    { $$ = std::nullopt; }
+    %empty    { }
   | IMPURE    { $$ = FunctionType::impure; }
   | PURE      { $$ = FunctionType::pure; }
   ;
 
 subprogram_statement_part:
     %empty
-              { $$ = std::vector<SequentialStatement> {}; }
+              { }
   | subprogram_statement_part sequential_statement
-              { $1.push_back($2); $$ = $1; }
+              { $$ = $1; $$.push_back($2); }
   ;
 
 subtype_declaration:
@@ -2357,7 +2357,7 @@ use_clause.selected_name_mul:
     expanded_selected_name
             { $$ = std::vector<ExpandedSelectedName> { $1 }; }
   | use_clause.selected_name_mul ',' expanded_selected_name
-            { $1.push_back($3); $$ = $1; }
+            { $$ = $1; $$.push_back($3); }
   ;
 
 value_expression:
@@ -2391,17 +2391,17 @@ wait_statement:
   ;
 
 wait_statement.sensitivity_clause_opt:
-    %empty              { $$ = std::nullopt; }
+    %empty              { }
   | sensitivity_clause
   ;
 
 wait_statement.condition_clause_opt:
-    %empty              { $$ = std::nullopt; }
+    %empty              { }
   | condition_clause
   ;
 
 wait_statement.timeout_clause_opt:
-    %empty              { $$ = std::nullopt; }
+    %empty              { }
   | timeout_clause
   ;
 
@@ -2414,7 +2414,7 @@ waveform.waveform_element_mul:
     waveform_element
                 { $$ = std::vector<WaveformElement> { $1 }; }
   | waveform.waveform_element_mul ',' waveform_element
-                { $1.push_back($3); $$ = $1; }
+                { $$ = $1; $$.push_back($3); }
   ;
 
 waveform_element:
