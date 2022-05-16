@@ -1,5 +1,4 @@
-#ifndef LEXER_DATA
-#define LEXER_DATA
+#pragma once
 
 #include <iostream>
 #include <optional>
@@ -9,7 +8,7 @@
 
 namespace lexer {
 
-enum class DelimiterKind {
+enum class delimiter_kind {
     // Compound delimiters (2 characters)
     arrow,
     box,
@@ -65,7 +64,7 @@ enum class ReservedWordKind {
 };
 // clang-format on
 
-enum class OpSymbol {
+enum class op_symbol {
     op_and,
     op_or,
     nand,
@@ -99,10 +98,25 @@ enum class OpSymbol {
 enum class BitStringBase {
     binary,
     octal,
-    hexadecimal
+    hexadecimal,
+    delimiter
+};
+
+enum class lexeme_kind {
+    based_literal,
+    basic_identifier,
+    bitstring_literal,
+    character_literal,
+    comment,
+    decimal_literal,
+    delimiter,
+    extended_identifier,
+    reserved_word,
+    string_literal,
 };
 
 struct Lexeme {
+    lexeme_kind kind;
     const size_t offset;
     std::string_view raw_view;
 };
@@ -122,7 +136,7 @@ struct CharacterLiteral : Lexeme {
 
 struct StringLiteral : Lexeme {
     std::string val;
-    std::optional<OpSymbol> operator_symbol;
+    std::optional<op_symbol> operator_symbol;
 };
 
 struct BasicIdentifier : Lexeme {
@@ -151,7 +165,7 @@ struct DecimalLiteral : Lexeme {
 };
 
 struct Delimiter : Lexeme {
-    DelimiterKind kind;
+    delimiter_kind kind;
 };
 
 using Token = std::variant<
@@ -169,9 +183,9 @@ using Token = std::variant<
 std::ostream& operator<<(std::ostream& out, const Lexeme& lex);
 
 std::ostream& operator<<(std::ostream& out, const BitStringBase base);
-std::ostream& operator<<(std::ostream& out, const DelimiterKind kind);
+std::ostream& operator<<(std::ostream& out, const delimiter_kind kind);
 std::ostream& operator<<(std::ostream& out, const ReservedWordKind kind);
-std::ostream& operator<<(std::ostream& out, const OpSymbol op);
+std::ostream& operator<<(std::ostream& out, const op_symbol op);
 
 std::ostream& operator<<(std::ostream& out, const Comment& comment);
 std::ostream& operator<<(std::ostream& out, const BitStringLiteral& lit);
@@ -185,5 +199,3 @@ std::ostream& operator<<(std::ostream& out, const DecimalLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const Delimiter& delim);
 
 } // namespace lexer
-
-#endif /* LEXER_DATA */

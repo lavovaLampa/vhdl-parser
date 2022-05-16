@@ -1,41 +1,38 @@
-#include "lexer_defs.hpp"
+#include "token.hpp"
 
 #include <cstdint>
 #include <cuchar>
-#include <iostream>
-#include <optional>
-#include <variant>
 
 namespace lexer {
 
-std::ostream& operator<<(std::ostream& out, DelimiterKind kind)
+std::ostream& operator<<(std::ostream& out, delimiter_kind kind)
 {
     switch (kind) {
-        case DelimiterKind::arrow: out << "=>"; break;
-        case DelimiterKind::box: out << "<>"; break;
-        case DelimiterKind::double_star: out << "**"; break;
-        case DelimiterKind::gt_or_equal: out << ">="; break;
-        case DelimiterKind::inequality: out << "/="; break;
-        case DelimiterKind::lt_or_equal: out << "<="; break;
-        case DelimiterKind::var_assignment: out << ":="; break;
-        case DelimiterKind::ampersand: out << "&"; break;
-        case DelimiterKind::apostrophe: out << "'"; break;
-        case DelimiterKind::asterisk: out << "*"; break;
-        case DelimiterKind::colon: out << ":"; break;
-        case DelimiterKind::comma: out << ","; break;
-        case DelimiterKind::dot: out << "."; break;
-        case DelimiterKind::equals_sign: out << "="; break;
-        case DelimiterKind::greater_than_sign: out << ">"; break;
-        case DelimiterKind::hyphen: out << "-"; break;
-        case DelimiterKind::left_paren: out << "("; break;
-        case DelimiterKind::left_square_bracket: out << "["; break;
-        case DelimiterKind::less_than_sign: out << "<"; break;
-        case DelimiterKind::plus_sign: out << "+"; break;
-        case DelimiterKind::right_paren: out << ")"; break;
-        case DelimiterKind::right_square_bracket: out << "]"; break;
-        case DelimiterKind::semicolon: out << ";"; break;
-        case DelimiterKind::slash: out << "/"; break;
-        case DelimiterKind::vertical_line: out << "|"; break;
+        case delimiter_kind::arrow: out << "=>"; break;
+        case delimiter_kind::box: out << "<>"; break;
+        case delimiter_kind::double_star: out << "**"; break;
+        case delimiter_kind::gt_or_equal: out << ">="; break;
+        case delimiter_kind::inequality: out << "/="; break;
+        case delimiter_kind::lt_or_equal: out << "<="; break;
+        case delimiter_kind::var_assignment: out << ":="; break;
+        case delimiter_kind::ampersand: out << "&"; break;
+        case delimiter_kind::apostrophe: out << "'"; break;
+        case delimiter_kind::asterisk: out << "*"; break;
+        case delimiter_kind::colon: out << ":"; break;
+        case delimiter_kind::comma: out << ","; break;
+        case delimiter_kind::dot: out << "."; break;
+        case delimiter_kind::equals_sign: out << "="; break;
+        case delimiter_kind::greater_than_sign: out << ">"; break;
+        case delimiter_kind::hyphen: out << "-"; break;
+        case delimiter_kind::left_paren: out << "("; break;
+        case delimiter_kind::left_square_bracket: out << "["; break;
+        case delimiter_kind::less_than_sign: out << "<"; break;
+        case delimiter_kind::plus_sign: out << "+"; break;
+        case delimiter_kind::right_paren: out << ")"; break;
+        case delimiter_kind::right_square_bracket: out << "]"; break;
+        case delimiter_kind::semicolon: out << ";"; break;
+        case delimiter_kind::slash: out << "/"; break;
+        case delimiter_kind::vertical_line: out << "|"; break;
         default: std::abort();
     }
 
@@ -151,37 +148,37 @@ std::ostream& operator<<(std::ostream& out, ReservedWordKind kind)
     return out;
 }
 
-std::ostream& operator<<(std::ostream& out, OpSymbol op)
+std::ostream& operator<<(std::ostream& out, op_symbol op)
 {
     switch (op) {
-        case OpSymbol::op_and: out << "and"; break;
-        case OpSymbol::op_or: out << "or"; break;
-        case OpSymbol::nand: out << "nand"; break;
-        case OpSymbol::nor: out << "nor"; break;
-        case OpSymbol::op_xor: out << "xor"; break;
-        case OpSymbol::xnor: out << "xnor"; break;
-        case OpSymbol::eq: out << "="; break;
-        case OpSymbol::neq: out << "/="; break;
-        case OpSymbol::lt: out << "<"; break;
-        case OpSymbol::lte: out << "<="; break;
-        case OpSymbol::gt: out << ">"; break;
-        case OpSymbol::gte: out << "<="; break;
-        case OpSymbol::sll: out << "sll"; break;
-        case OpSymbol::srl: out << "srl"; break;
-        case OpSymbol::sla: out << "sla"; break;
-        case OpSymbol::sra: out << "sra"; break;
-        case OpSymbol::rol: out << "rol"; break;
-        case OpSymbol::ror: out << "ror"; break;
-        case OpSymbol::plus: out << "+"; break;
-        case OpSymbol::minus: out << "-"; break;
-        case OpSymbol::ampersand: out << "&"; break;
-        case OpSymbol::mul: out << "*"; break;
-        case OpSymbol::div: out << "/"; break;
-        case OpSymbol::mod: out << "mod"; break;
-        case OpSymbol::rem: out << "rem"; break;
-        case OpSymbol::exp: out << "exp"; break;
-        case OpSymbol::abs: out << "abs"; break;
-        case OpSymbol::op_not: out << "not"; break;
+        case op_symbol::op_and: out << "and"; break;
+        case op_symbol::op_or: out << "or"; break;
+        case op_symbol::nand: out << "nand"; break;
+        case op_symbol::nor: out << "nor"; break;
+        case op_symbol::op_xor: out << "xor"; break;
+        case op_symbol::xnor: out << "xnor"; break;
+        case op_symbol::eq: out << "="; break;
+        case op_symbol::neq: out << "/="; break;
+        case op_symbol::lt: out << "<"; break;
+        case op_symbol::lte: out << "<="; break;
+        case op_symbol::gt: out << ">"; break;
+        case op_symbol::gte: out << "<="; break;
+        case op_symbol::sll: out << "sll"; break;
+        case op_symbol::srl: out << "srl"; break;
+        case op_symbol::sla: out << "sla"; break;
+        case op_symbol::sra: out << "sra"; break;
+        case op_symbol::rol: out << "rol"; break;
+        case op_symbol::ror: out << "ror"; break;
+        case op_symbol::plus: out << "+"; break;
+        case op_symbol::minus: out << "-"; break;
+        case op_symbol::ampersand: out << "&"; break;
+        case op_symbol::mul: out << "*"; break;
+        case op_symbol::div: out << "/"; break;
+        case op_symbol::mod: out << "mod"; break;
+        case op_symbol::rem: out << "rem"; break;
+        case op_symbol::exp: out << "exp"; break;
+        case op_symbol::abs: out << "abs"; break;
+        case op_symbol::op_not: out << "not"; break;
         default: std::abort();
     }
 
