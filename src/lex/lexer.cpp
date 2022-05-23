@@ -12,14 +12,14 @@ Lexer::Lexer(std::string_view input, int32_t lookahead)
     : lookahead { lookahead }
     , source { input }
     , cursor { input.begin( ) }
-    , tokens { std::queue<std::optional<Token>>() }
+    , tokens { std::queue<std::optional<TokenVariant>>() }
 {
     for (int32_t i { 0 }; i < lookahead; i++) {
         tokens.emplace(lex_pre_parse(this->source, this->cursor));
     }
 }
 
-std::optional<Token> Lexer::pop()
+std::optional<TokenVariant> Lexer::pop()
 {
     const auto result { std::move(this->tokens.front()) };
     this->tokens.pop();
@@ -27,7 +27,7 @@ std::optional<Token> Lexer::pop()
     return result;
 }
 
-const std::queue<std::optional<Token>>& Lexer::peek() const noexcept
+const std::queue<std::optional<TokenVariant>>& Lexer::peek() const noexcept
 {
     return this->tokens;
 }
@@ -37,7 +37,7 @@ void Lexer::reset() noexcept
     this->cursor = this->source.begin();
 }
 
-std::optional<Token> lex(std::string_view src, const char* cursor)
+std::optional<TokenVariant> lex(std::string_view src, const char* cursor)
 {
     Expects((src.size() == 0) || *(src.end() - 1) == '\0');
 
@@ -54,7 +54,7 @@ std::optional<Token> lex(std::string_view src, const char* cursor)
         return std::string_view { token_begin, cursor - token_begin };
     } };
 
-    auto make_reserved { [&](ReservedWordKind kind) {
+    auto make_reserved { [&](reserved_word_kind kind) {
         Expects(cursor >= token_begin);
 
         return ReservedWord {
@@ -110,105 +110,105 @@ std::optional<Token> lex(std::string_view src, const char* cursor)
 
             delimiter           { continue; }
 
-            reserved_abs            { return make_reserved(ReservedWordKind::ABS); }
-            reserved_access         { return make_reserved(ReservedWordKind::ACCESS); }
-            reserved_after          { return make_reserved(ReservedWordKind::AFTER); }
-            reserved_alias          { return make_reserved(ReservedWordKind::ALIAS); }
-            reserved_all            { return make_reserved(ReservedWordKind::ALL); }
-            reserved_and            { return make_reserved(ReservedWordKind::AND); }
-            reserved_architecture   { return make_reserved(ReservedWordKind::ARCHITECTURE); }
-            reserved_array          { return make_reserved(ReservedWordKind::ARRAY); }
-            reserved_assert         { return make_reserved(ReservedWordKind::ASSERT); }
-            reserved_begin          { return make_reserved(ReservedWordKind::BEGIN); }
-            reserved_block          { return make_reserved(ReservedWordKind::BLOCK); }
-            reserved_body           { return make_reserved(ReservedWordKind::BODY); }
-            reserved_buffer         { return make_reserved(ReservedWordKind::BUFFER); }
-            reserved_bus            { return make_reserved(ReservedWordKind::BUS); }
-            reserved_case           { return make_reserved(ReservedWordKind::CASE); }
-            reserved_component      { return make_reserved(ReservedWordKind::COMPONENT); }
-            reserved_configuration  { return make_reserved(ReservedWordKind::CONFIGURATION); }
-            reserved_constant       { return make_reserved(ReservedWordKind::CONSTANT); }
-            reserved_disconnect     { return make_reserved(ReservedWordKind::DISCONNECT); }
-            reserved_downto         { return make_reserved(ReservedWordKind::DOWNTO); }
-            reserved_else           { return make_reserved(ReservedWordKind::ELSE); }
-            reserved_elsif          { return make_reserved(ReservedWordKind::ELSIF); }
-            reserved_end            { return make_reserved(ReservedWordKind::END); }
-            reserved_entity         { return make_reserved(ReservedWordKind::ENTITY); }
-            reserved_exit           { return make_reserved(ReservedWordKind::EXIT); }
-            reserved_file           { return make_reserved(ReservedWordKind::FILE); }
-            reserved_for            { return make_reserved(ReservedWordKind::FOR); }
-            reserved_function       { return make_reserved(ReservedWordKind::FUNCTION); }
-            reserved_generate       { return make_reserved(ReservedWordKind::GENERATE); }
-            reserved_generic        { return make_reserved(ReservedWordKind::GENERIC); }
-            reserved_group          { return make_reserved(ReservedWordKind::GROUP); }
-            reserved_guarded        { return make_reserved(ReservedWordKind::GUARDED); }
-            reserved_if             { return make_reserved(ReservedWordKind::IF); }
-            reserved_impure         { return make_reserved(ReservedWordKind::IMPURE); }
-            reserved_in             { return make_reserved(ReservedWordKind::IN); }
-            reserved_inertial       { return make_reserved(ReservedWordKind::INERTIAL); }
-            reserved_inout          { return make_reserved(ReservedWordKind::INOUT); }
-            reserved_is             { return make_reserved(ReservedWordKind::IS); }
-            reserved_label          { return make_reserved(ReservedWordKind::LABEL); }
-            reserved_library        { return make_reserved(ReservedWordKind::LIBRARY); }
-            reserved_linkage        { return make_reserved(ReservedWordKind::LINKAGE); }
-            reserved_literal        { return make_reserved(ReservedWordKind::LITERAL); }
-            reserved_loop           { return make_reserved(ReservedWordKind::LOOP); }
-            reserved_map            { return make_reserved(ReservedWordKind::MAP); }
-            reserved_mod            { return make_reserved(ReservedWordKind::MOD); }
-            reserved_nand           { return make_reserved(ReservedWordKind::NAND); }
-            reserved_new            { return make_reserved(ReservedWordKind::NEW); }
-            reserved_next           { return make_reserved(ReservedWordKind::NEXT); }
-            reserved_nor            { return make_reserved(ReservedWordKind::NOR); }
-            reserved_not            { return make_reserved(ReservedWordKind::NOT); }
-            reserved_null           { return make_reserved(ReservedWordKind::NULL); }
-            reserved_of             { return make_reserved(ReservedWordKind::OF); }
-            reserved_on             { return make_reserved(ReservedWordKind::ON); }
-            reserved_open           { return make_reserved(ReservedWordKind::OPEN); }
-            reserved_or             { return make_reserved(ReservedWordKind::OR); }
-            reserved_others         { return make_reserved(ReservedWordKind::OTHERS); }
-            reserved_out            { return make_reserved(ReservedWordKind::OUT); }
-            reserved_package        { return make_reserved(ReservedWordKind::PACKAGE); }
-            reserved_port           { return make_reserved(ReservedWordKind::PORT); }
-            reserved_postponed      { return make_reserved(ReservedWordKind::POSTPONED); }
-            reserved_procedural     { return make_reserved(ReservedWordKind::PROCEDURAL); }
-            reserved_procedure      { return make_reserved(ReservedWordKind::PROCEDURE); }
-            reserved_process        { return make_reserved(ReservedWordKind::PROCESS); }
-            reserved_protected      { return make_reserved(ReservedWordKind::PROTECTED); }
-            reserved_pure           { return make_reserved(ReservedWordKind::PURE); }
-            reserved_range          { return make_reserved(ReservedWordKind::RANGE); }
-            reserved_record         { return make_reserved(ReservedWordKind::RECORD); }
-            reserved_reference      { return make_reserved(ReservedWordKind::REFERENCE); }
-            reserved_register       { return make_reserved(ReservedWordKind::REGISTER); }
-            reserved_reject         { return make_reserved(ReservedWordKind::REJECT); }
-            reserved_rem            { return make_reserved(ReservedWordKind::REM); }
-            reserved_report         { return make_reserved(ReservedWordKind::REPORT); }
-            reserved_return         { return make_reserved(ReservedWordKind::RETURN); }
-            reserved_rol            { return make_reserved(ReservedWordKind::ROL); }
-            reserved_ror            { return make_reserved(ReservedWordKind::ROR); }
-            reserved_select         { return make_reserved(ReservedWordKind::SELECT); }
-            reserved_severity       { return make_reserved(ReservedWordKind::SEVERITY); }
-            reserved_signal         { return make_reserved(ReservedWordKind::SIGNAL); }
-            reserved_shared         { return make_reserved(ReservedWordKind::SHARED); }
-            reserved_sla            { return make_reserved(ReservedWordKind::SLA); }
-            reserved_sll            { return make_reserved(ReservedWordKind::SLL); }
-            reserved_sra            { return make_reserved(ReservedWordKind::SRA); }
-            reserved_srl            { return make_reserved(ReservedWordKind::SRL); }
-            reserved_subtype        { return make_reserved(ReservedWordKind::SUBTYPE); }
-            reserved_then           { return make_reserved(ReservedWordKind::THEN); }
-            reserved_to             { return make_reserved(ReservedWordKind::TO); }
-            reserved_transport      { return make_reserved(ReservedWordKind::TRANSPORT); }
-            reserved_type           { return make_reserved(ReservedWordKind::TYPE); }
-            reserved_unaffected     { return make_reserved(ReservedWordKind::UNAFFECTED); }
-            reserved_units          { return make_reserved(ReservedWordKind::UNITS); }
-            reserved_until          { return make_reserved(ReservedWordKind::UNTIL); }
-            reserved_use            { return make_reserved(ReservedWordKind::USE); }
-            reserved_variable       { return make_reserved(ReservedWordKind::VARIABLE); }
-            reserved_wait           { return make_reserved(ReservedWordKind::WAIT); }
-            reserved_when           { return make_reserved(ReservedWordKind::WHEN); }
-            reserved_while          { return make_reserved(ReservedWordKind::WHILE); }
-            reserved_with           { return make_reserved(ReservedWordKind::WITH); }
-            reserved_xnor           { return make_reserved(ReservedWordKind::XNOR); }
-            reserved_xor            { return make_reserved(ReservedWordKind::XOR); }
+            reserved_abs            { return make_reserved(reserved_word_kind::ABS); }
+            reserved_access         { return make_reserved(reserved_word_kind::ACCESS); }
+            reserved_after          { return make_reserved(reserved_word_kind::AFTER); }
+            reserved_alias          { return make_reserved(reserved_word_kind::ALIAS); }
+            reserved_all            { return make_reserved(reserved_word_kind::ALL); }
+            reserved_and            { return make_reserved(reserved_word_kind::AND); }
+            reserved_architecture   { return make_reserved(reserved_word_kind::ARCHITECTURE); }
+            reserved_array          { return make_reserved(reserved_word_kind::ARRAY); }
+            reserved_assert         { return make_reserved(reserved_word_kind::ASSERT); }
+            reserved_begin          { return make_reserved(reserved_word_kind::BEGIN); }
+            reserved_block          { return make_reserved(reserved_word_kind::BLOCK); }
+            reserved_body           { return make_reserved(reserved_word_kind::BODY); }
+            reserved_buffer         { return make_reserved(reserved_word_kind::BUFFER); }
+            reserved_bus            { return make_reserved(reserved_word_kind::BUS); }
+            reserved_case           { return make_reserved(reserved_word_kind::CASE); }
+            reserved_component      { return make_reserved(reserved_word_kind::COMPONENT); }
+            reserved_configuration  { return make_reserved(reserved_word_kind::CONFIGURATION); }
+            reserved_constant       { return make_reserved(reserved_word_kind::CONSTANT); }
+            reserved_disconnect     { return make_reserved(reserved_word_kind::DISCONNECT); }
+            reserved_downto         { return make_reserved(reserved_word_kind::DOWNTO); }
+            reserved_else           { return make_reserved(reserved_word_kind::ELSE); }
+            reserved_elsif          { return make_reserved(reserved_word_kind::ELSIF); }
+            reserved_end            { return make_reserved(reserved_word_kind::END); }
+            reserved_entity         { return make_reserved(reserved_word_kind::ENTITY); }
+            reserved_exit           { return make_reserved(reserved_word_kind::EXIT); }
+            reserved_file           { return make_reserved(reserved_word_kind::FILE); }
+            reserved_for            { return make_reserved(reserved_word_kind::FOR); }
+            reserved_function       { return make_reserved(reserved_word_kind::FUNCTION); }
+            reserved_generate       { return make_reserved(reserved_word_kind::GENERATE); }
+            reserved_generic        { return make_reserved(reserved_word_kind::GENERIC); }
+            reserved_group          { return make_reserved(reserved_word_kind::GROUP); }
+            reserved_guarded        { return make_reserved(reserved_word_kind::GUARDED); }
+            reserved_if             { return make_reserved(reserved_word_kind::IF); }
+            reserved_impure         { return make_reserved(reserved_word_kind::IMPURE); }
+            reserved_in             { return make_reserved(reserved_word_kind::IN); }
+            reserved_inertial       { return make_reserved(reserved_word_kind::INERTIAL); }
+            reserved_inout          { return make_reserved(reserved_word_kind::INOUT); }
+            reserved_is             { return make_reserved(reserved_word_kind::IS); }
+            reserved_label          { return make_reserved(reserved_word_kind::LABEL); }
+            reserved_library        { return make_reserved(reserved_word_kind::LIBRARY); }
+            reserved_linkage        { return make_reserved(reserved_word_kind::LINKAGE); }
+            reserved_literal        { return make_reserved(reserved_word_kind::LITERAL); }
+            reserved_loop           { return make_reserved(reserved_word_kind::LOOP); }
+            reserved_map            { return make_reserved(reserved_word_kind::MAP); }
+            reserved_mod            { return make_reserved(reserved_word_kind::MOD); }
+            reserved_nand           { return make_reserved(reserved_word_kind::NAND); }
+            reserved_new            { return make_reserved(reserved_word_kind::NEW); }
+            reserved_next           { return make_reserved(reserved_word_kind::NEXT); }
+            reserved_nor            { return make_reserved(reserved_word_kind::NOR); }
+            reserved_not            { return make_reserved(reserved_word_kind::NOT); }
+            reserved_null           { return make_reserved(reserved_word_kind::NULL); }
+            reserved_of             { return make_reserved(reserved_word_kind::OF); }
+            reserved_on             { return make_reserved(reserved_word_kind::ON); }
+            reserved_open           { return make_reserved(reserved_word_kind::OPEN); }
+            reserved_or             { return make_reserved(reserved_word_kind::OR); }
+            reserved_others         { return make_reserved(reserved_word_kind::OTHERS); }
+            reserved_out            { return make_reserved(reserved_word_kind::OUT); }
+            reserved_package        { return make_reserved(reserved_word_kind::PACKAGE); }
+            reserved_port           { return make_reserved(reserved_word_kind::PORT); }
+            reserved_postponed      { return make_reserved(reserved_word_kind::POSTPONED); }
+            reserved_procedural     { return make_reserved(reserved_word_kind::PROCEDURAL); }
+            reserved_procedure      { return make_reserved(reserved_word_kind::PROCEDURE); }
+            reserved_process        { return make_reserved(reserved_word_kind::PROCESS); }
+            reserved_protected      { return make_reserved(reserved_word_kind::PROTECTED); }
+            reserved_pure           { return make_reserved(reserved_word_kind::PURE); }
+            reserved_range          { return make_reserved(reserved_word_kind::RANGE); }
+            reserved_record         { return make_reserved(reserved_word_kind::RECORD); }
+            reserved_reference      { return make_reserved(reserved_word_kind::REFERENCE); }
+            reserved_register       { return make_reserved(reserved_word_kind::REGISTER); }
+            reserved_reject         { return make_reserved(reserved_word_kind::REJECT); }
+            reserved_rem            { return make_reserved(reserved_word_kind::REM); }
+            reserved_report         { return make_reserved(reserved_word_kind::REPORT); }
+            reserved_return         { return make_reserved(reserved_word_kind::RETURN); }
+            reserved_rol            { return make_reserved(reserved_word_kind::ROL); }
+            reserved_ror            { return make_reserved(reserved_word_kind::ROR); }
+            reserved_select         { return make_reserved(reserved_word_kind::SELECT); }
+            reserved_severity       { return make_reserved(reserved_word_kind::SEVERITY); }
+            reserved_signal         { return make_reserved(reserved_word_kind::SIGNAL); }
+            reserved_shared         { return make_reserved(reserved_word_kind::SHARED); }
+            reserved_sla            { return make_reserved(reserved_word_kind::SLA); }
+            reserved_sll            { return make_reserved(reserved_word_kind::SLL); }
+            reserved_sra            { return make_reserved(reserved_word_kind::SRA); }
+            reserved_srl            { return make_reserved(reserved_word_kind::SRL); }
+            reserved_subtype        { return make_reserved(reserved_word_kind::SUBTYPE); }
+            reserved_then           { return make_reserved(reserved_word_kind::THEN); }
+            reserved_to             { return make_reserved(reserved_word_kind::TO); }
+            reserved_transport      { return make_reserved(reserved_word_kind::TRANSPORT); }
+            reserved_type           { return make_reserved(reserved_word_kind::TYPE); }
+            reserved_unaffected     { return make_reserved(reserved_word_kind::UNAFFECTED); }
+            reserved_units          { return make_reserved(reserved_word_kind::UNITS); }
+            reserved_until          { return make_reserved(reserved_word_kind::UNTIL); }
+            reserved_use            { return make_reserved(reserved_word_kind::USE); }
+            reserved_variable       { return make_reserved(reserved_word_kind::VARIABLE); }
+            reserved_wait           { return make_reserved(reserved_word_kind::WAIT); }
+            reserved_when           { return make_reserved(reserved_word_kind::WHEN); }
+            reserved_while          { return make_reserved(reserved_word_kind::WHILE); }
+            reserved_with           { return make_reserved(reserved_word_kind::WITH); }
+            reserved_xnor           { return make_reserved(reserved_word_kind::XNOR); }
+            reserved_xor            { return make_reserved(reserved_word_kind::XOR); }
 
             comment                     { return parse_comment(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }
             bitstring_literal           { return parse_bitstring_literal(begin_offset, std::string_view { begin_cursor, cursor - begin_cursor }); }

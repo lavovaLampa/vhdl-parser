@@ -2,11 +2,11 @@
 
 #include "lexer.hpp"
 
-#include <optional>
 #include <string_view>
+#include <tl/optional.hpp>
 
 namespace lexer {
 
-std::optional<Token> lex_pre_parse(std::string_view src, LexerState& state);
+tl::optional<TokenVariant> lex_pre_parse(std::string_view src, const char* cursor);
 
 }

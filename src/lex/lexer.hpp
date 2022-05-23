@@ -5,8 +5,8 @@
 #include <array>
 #include <cstdint>
 #include <queue>
-#include <optional>
 #include <string_view>
+#include <tl/optional.hpp>
 
 namespace lexer {
 
@@ -17,15 +17,15 @@ private:
     std::string_view source;
     const char* cursor;
 
-    std::queue<std::optional<Token>> tokens;
+    std::deque<tl::optional<TokenVariant>> tokens;
 
 public:
     Lexer(std::string_view input, int32_t lookahead = 1);
-    std::optional<Token> pop();
-    const std::queue<std::optional<Token>>& peek() const noexcept;
+    tl::optional<TokenVariant> pop();
+    const std::deque<tl::optional<TokenVariant>>& peek() const noexcept;
     void reset() noexcept;
 };
 
-std::optional<Token> lex(std::string_view src, const char* cursor);
+tl::optional<TokenVariant> lex(std::string_view src, const char* cursor);
 
 } // namespace lexer

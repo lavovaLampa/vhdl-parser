@@ -238,11 +238,11 @@ cpp::result<BitStringLiteral, ParseError> parse_bitstring_literal(
     // TODO: Why create intermediate string?
     std::string lower_string { filtered_view.begin(), filtered_view.end() };
 
-    BitStringBase base { BitStringBase::binary };
+    bit_string_base base { bit_string_base::binary };
     switch (lower_string[0]) {
-        case 'x': base = BitStringBase::hexadecimal; break;
-        case 'o': base = BitStringBase::octal; break;
-        case 'b': base = BitStringBase::binary; break;
+        case 'x': base = bit_string_base::hexadecimal; break;
+        case 'o': base = bit_string_base::octal; break;
+        case 'b': base = bit_string_base::binary; break;
     }
 
     return BitStringLiteral {

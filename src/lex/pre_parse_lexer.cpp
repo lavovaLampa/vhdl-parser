@@ -7,7 +7,8 @@
 #include <gsl/assert>
 
 namespace lexer {
-std::optional<Token> lex_pre_parse(std::string_view src, const char* cursor)
+
+tl::optional<TokenVariant> lex_pre_parse(std::string_view src, const char* cursor)
 {
     Expects((src.size() == 0) || *(src.end() - 1) == '\0');
 
@@ -22,29 +23,29 @@ std::optional<Token> lex_pre_parse(std::string_view src, const char* cursor)
     const char* marker {};
     const char* ctxmarker {};
 
-    auto make_string_view { [&]() {
-        return std::string_view { token_begin, cursor - token_begin };
-    } };
-
-    auto make_reserved { [&](ReservedWordKind kind) {
-        Expects(cursor >= token_begin);
-
+    auto make_reserved { [&](reserved_word_kind kind) {
         return ReservedWord {
-            {
-                .kind { lexeme_kind::reserved_word },
-                .offset { static_cast<size_t>(cursor - token_begin) },
-                .raw_view { make_string_view() }
-            },
+            static_cast<size_t>(token_begin - base),
+            static_cast<size_t>(cursor - token_begin),
             kind
         };
     } };
 
+    auto make_delimiter{ [&](delimiter_kind kind) {
+        return Delimiter { 
+            static_cast<size_t>(token_begin - base),
+            static_cast<size_t>(cursor - token_begin),
+            kind
+        };
+    } };
 
     while (true) {
+        token_begin = cursor;
+
         assert(cursor <= sentinel);
         assert(token_begin >= base);
+        assert(cursor >= token_begin);
 
-        token_begin = cursor;
 
         /*!include:re2c "./re2c_common.txt" */
 
@@ -155,27 +156,54 @@ std::optional<Token> lex_pre_parse(std::string_view src, const char* cursor)
             reserved_xnor           { continue; }
             reserved_xor            { continue; }
 
-            reserved_architecture   { make_reserved(ReservedWordKind::ARCHITECTURE); }
-            reserved_begin          { make_reserved(ReservedWordKind::BEGIN); }
-            reserved_block          { make_reserved(ReservedWordKind::BLOCK); }
-            reserved_body           { make_reserved(ReservedWordKind::BODY); }
-            reserved_case           { make_reserved(ReservedWordKind::CASE); }
-            reserved_component      { make_reserved(ReservedWordKind::COMPONENT); }
-            reserved_configuration  { make_reserved(ReservedWordKind::CONFIGURATION); }
-            reserved_end            { make_reserved(ReservedWordKind::END); }
-            reserved_entity         { make_reserved(ReservedWordKind::ENTITY); }
-            reserved_for            { make_reserved(ReservedWordKind::FOR); }
-            reserved_function       { make_reserved(ReservedWordKind::FUNCTION); }
-            reserved_generate       { make_reserved(ReservedWordKind::GENERATE); }
-            reserved_if             { make_reserved(ReservedWordKind::IF); }
-            reserved_in             { make_reserved(ReservedWordKind::IN); }
-            reserved_loop           { make_reserved(ReservedWordKind::LOOP); }
-            reserved_package        { make_reserved(ReservedWordKind::PACKAGE); }
-            reserved_procedure      { make_reserved(ReservedWordKind::PROCEDURE); }
-            reserved_process        { make_reserved(ReservedWordKind::PROCESS); }
-            reserved_protected      { make_reserved(ReservedWordKind::PROTECTED); }
-            reserved_record         { make_reserved(ReservedWordKind::RECORD); }
-            reserved_units          { make_reserved(ReservedWordKind::UNITS); }
+            reserved_architecture   { make_reserved(reserved_word_kind::ARCHITECTURE); }
+            reserved_begin          { make_reserved(reserved_word_kind::BEGIN); }
+            reserved_block          { make_reserved(reserved_word_kind::BLOCK); }
+            reserved_body           { make_reserved(reserved_word_kind::BODY); }
+            reserved_case           { make_reserved(reserved_word_kind::CASE); }
+            reserved_component      { make_reserved(reserved_word_kind::COMPONENT); }
+            reserved_configuration  { make_reserved(reserved_word_kind::CONFIGURATION); }
+            reserved_end            { make_reserved(reserved_word_kind::END); }
+            reserved_entity         { make_reserved(reserved_word_kind::ENTITY); }
+            reserved_for            { make_reserved(reserved_word_kind::FOR); }
+            reserved_function       { make_reserved(reserved_word_kind::FUNCTION); }
+            reserved_generate       { make_reserved(reserved_word_kind::GENERATE); }
+            reserved_if             { make_reserved(reserved_word_kind::IF); }
+            reserved_in             { make_reserved(reserved_word_kind::IN); }
+            reserved_loop           { make_reserved(reserved_word_kind::LOOP); }
+            reserved_package        { make_reserved(reserved_word_kind::PACKAGE); }
+            reserved_procedure      { make_reserved(reserved_word_kind::PROCEDURE); }
+            reserved_process        { make_reserved(reserved_word_kind::PROCESS); }
+            reserved_protected      { make_reserved(reserved_word_kind::PROTECTED); }
+            reserved_record         { make_reserved(reserved_word_kind::RECORD); }
+            reserved_units          { make_reserved(reserved_word_kind::UNITS); }
+
+            delim_arrow                 { continue; }
+            delim_box                   { continue; }
+            delim_double_star           { continue; }
+            delim_gt_or_equal           { continue; }
+            delim_inequality            { continue; }
+            delim_lt_or_equal           { continue; }
+            delim_var_assignment        { continue; }
+
+            delim_ampersand             { continue; }
+            delim_apostrophe            { continue; }
+            delim_asterisk              { continue; }
+            delim_colon                 { continue; }
+            delim_comma                 { continue; }
+            delim_dot                   { continue; }
+            delim_equals_sign           { continue; }
+            delim_greater_than_sign     { continue; }
+            delim_hyphen                { continue; }
+            delim_left_paren            { continue; }
+            delim_left_square_bracket   { continue; }
+            delim_less_than_sign        { continue; }
+            delim_plus_sign             { continue; }
+            delim_right_paren           { continue; }
+            delim_right_square_bracket  { continue; }
+            delim_semicolon             { make_delimiter(delimiter_kind::semicolon); }
+            delim_slash                 { continue; }
+            delim_vertical_line         { continue; }
 
             
             basic_identifier    {

@@ -1,10 +1,11 @@
 #pragma once
 
 #include <iostream>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
+#include <cstdint>
+#include "error.hpp"
 
 namespace lexer {
 
@@ -40,7 +41,7 @@ enum class delimiter_kind {
 };
 
 // clang-format off
-enum class ReservedWordKind {
+enum class reserved_word_kind {
     ABS, ACCESS, AFTER, ALIAS, ALL, AND, ARCHITECTURE, ARRAY, ASSERT, ATTRIBUTE,
     BEGIN, BLOCK, BODY, BUFFER, BUS,
     CASE, COMPONENT, CONFIGURATION, CONSTANT,
@@ -95,104 +96,148 @@ enum class op_symbol {
     op_not
 };
 
-enum class BitStringBase {
+enum class bit_string_base {
     binary,
     octal,
     hexadecimal,
     delimiter
 };
 
-enum class lexeme_kind {
+enum class token_kind {
     based_literal,
-    basic_identifier,
     bitstring_literal,
     character_literal,
     comment,
     decimal_literal,
     delimiter,
-    extended_identifier,
+    identifier,
     reserved_word,
     string_literal,
 };
 
-struct Lexeme {
-    lexeme_kind kind;
-    const size_t offset;
-    std::string_view raw_view;
+enum class identifier_kind {
+    basic,
+    extended
 };
 
-struct Comment : Lexeme {
+class Token {
+protected:
+    Token(size_t offset, size_t len, token_kind kind);
+
+public:
+    token_kind kind;
+    size_t offset;
+    size_t len;
+
+    virtual ~Token() = default;
+};
+
+class Comment : public Token {
+public:
     std::string val;
+
+    Comment(size_t offset, size_t len, std::string val);
 };
 
-struct BitStringLiteral : Lexeme {
-    BitStringBase base;
+class BitStringLiteral : public Token {
+public:
+    bit_string_base base;
     std::string val;
+
+    BitStringLiteral(size_t offset, size_t len, bit_string_base base, std::string val);
 };
 
-struct CharacterLiteral : Lexeme {
-    char val;
+class CharacterLiteral : public Token {
+public:
+    // FIXME: Proper unicode support (i.e, to char32_t?)
+    char8_t val;
+
+    CharacterLiteral(size_t offset, size_t len, char8_t val);
 };
 
-struct StringLiteral : Lexeme {
+class StringLiteral : public Token {
+public:
     std::string val;
     std::optional<op_symbol> operator_symbol;
+
+    StringLiteral(
+        size_t offset,
+        size_t len,
+        std::string val,
+        std::optional<op_symbol> operator_symbol);
 };
 
-struct BasicIdentifier : Lexeme {
+class Identifier : public Token {
+public:
+    identifier_kind kind;
     std::string val;
+
+    Identifier(size_t offset, size_t len, identifier_kind kind, std::string val);
 };
 
-struct ExtendedIdentifier : Lexeme {
-    std::string val;
+class ReservedWord : public Token {
+public:
+    reserved_word_kind kind;
+
+    ReservedWord(size_t offset, size_t len, reserved_word_kind kind);
 };
 
-struct ReservedWord : Lexeme {
-    ReservedWordKind kind;
-};
-
-struct BasedLiteral : Lexeme {
+class BasedLiteral : public Token {
+public:
     int32_t base;
     int32_t decimal_part;
     std::optional<int32_t> fraction_part { std::nullopt };
     std::optional<int32_t> exponent { std::nullopt };
+
+    BasedLiteral(
+        size_t offset,
+        size_t len,
+        int32_t base,
+        int32_t decimal_part,
+        std::optional<int32_t> fraction_part = std::nullopt,
+        std::optional<int32_t> exponent = std::nullopt);
 };
 
-struct DecimalLiteral : Lexeme {
+class DecimalLiteral : public Token {
+public:
     int32_t decimal_part;
     std::optional<int32_t> fraction_part { std::nullopt };
     std::optional<int32_t> exponent { std::nullopt };
+
+    DecimalLiteral(
+        size_t offset,
+        size_t len,
+        int32_t decimal_part,
+        std::optional<int32_t> fraction_part = std::nullopt,
+        std::optional<int32_t> exponent = std::nullopt);
 };
 
-struct Delimiter : Lexeme {
+class Delimiter : public Token {
+public:
     delimiter_kind kind;
+
+    Delimiter(size_t offset, size_t len, delimiter_kind kind);
 };
 
-using Token = std::variant<
+
+using TokenVariant = std::variant<
     Comment,
     BitStringLiteral,
     CharacterLiteral,
     StringLiteral,
+    Identifier,
     ReservedWord,
-    BasicIdentifier,
-    ExtendedIdentifier,
     BasedLiteral,
     DecimalLiteral,
     Delimiter>;
 
-std::ostream& operator<<(std::ostream& out, const Lexeme& lex);
-
-std::ostream& operator<<(std::ostream& out, const BitStringBase base);
-std::ostream& operator<<(std::ostream& out, const delimiter_kind kind);
-std::ostream& operator<<(std::ostream& out, const ReservedWordKind kind);
-std::ostream& operator<<(std::ostream& out, const op_symbol op);
+std::ostream& operator<<(std::ostream& out, const Token& lex);
 
 std::ostream& operator<<(std::ostream& out, const Comment& comment);
 std::ostream& operator<<(std::ostream& out, const BitStringLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const CharacterLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const StringLiteral& lit);
-std::ostream& operator<<(std::ostream& out, const BasicIdentifier& id);
-std::ostream& operator<<(std::ostream& out, const ExtendedIdentifier& id);
+std::ostream& operator<<(std::ostream& out, const Identifier& id);
 std::ostream& operator<<(std::ostream& out, const ReservedWord& id);
 std::ostream& operator<<(std::ostream& out, const BasedLiteral& lit);
 std::ostream& operator<<(std::ostream& out, const DecimalLiteral& lit);

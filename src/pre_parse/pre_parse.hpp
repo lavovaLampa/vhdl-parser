@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
 #include <vector>
+#include <tl/optional.hpp>
 
 namespace pre_parse {
 
@@ -17,10 +19,10 @@ enum class library_unit_kind {
 
 struct LibraryUnit {
     fs::path file;
-    std::optional<std::string> name;
-    library_unit_kind kind;
+    tl::optional<std::string> name;
     size_t offset;
     size_t len;
+    library_unit_kind kind;
 };
 
 std::vector<LibraryUnit> pre_parse_file(fs::path file);
