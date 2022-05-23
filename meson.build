@@ -11,13 +11,17 @@ project(
 src = [
     'src/main.cpp',
     'src/error.cpp',
-    'src/lexer/lexer_utils.cpp',
-    'src/lexer/lexer_defs.cpp'
+    'src/parse/parser_defs.cpp',
+    'src/pre_parse/pre_parse.cpp',
+    'src/lex/common.cpp',
+    'src/lex/lexer.cpp',
+    'src/lex/pre_parse_lexer.cpp',
+    'src/lex/token.cpp'
 ]
 
 inc = include_directories(
-    'src/',
-    'lib/'
+    'src',
+    'lib'
 )
 
 # Generate re2c pre-processed lexer sources
@@ -25,7 +29,7 @@ re2c = find_program('re2c')
 
 gen_lexer = custom_target(
     'gen-lexer',
-    input: ['src/lexer/lexer.cpp'],
+    input: ['src/lex/lexer.cpp'],
     output: ['lexer_out.cpp'],
     command: [
         re2c, '@INPUT@', '-o', '@OUTPUT0@', '-i', '--case-ranges'
@@ -34,7 +38,7 @@ gen_lexer = custom_target(
 
 re2c_lexer_out = declare_dependency(
     sources: [gen_lexer],
-    include_directories: ['src/lexer/']
+    include_directories: ['src/lex/']
 )
 
 executable(
