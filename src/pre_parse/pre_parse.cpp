@@ -3,12 +3,10 @@
 #include "lex/lexer.hpp"
 #include "lex/pre_parse_lexer.hpp"
 #include "lex/token.hpp"
-#include "tl/optional.hpp"
 
 #include <deque>
-#include <functional>
-#include <initializer_list>
 #include <variant>
+#include <tl/optional.hpp>
 
 
 namespace pre_parse {

@@ -1,7 +1,6 @@
-#ifndef PARSER_DEFS
-#define PARSER_DEFS
+#pragma once
 
-#include "lexer/lexer_defs.hpp"
+#include "lex/token.hpp"
 
 #include <gsl/pointers>
 #include <memory>
@@ -1434,5 +1433,3 @@ namespace WaveformElementKind {
 } // namespace WaveformElementKind
 
 } // namespace parser
-
-#endif /* PARSER_DEFS */
