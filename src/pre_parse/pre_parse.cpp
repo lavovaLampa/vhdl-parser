@@ -54,145 +54,144 @@ namespace parser {
         }
     }
 
-    static void temp_match(lexer::Lexer& lexer)
+    static void match_any(lexer::Lexer& lexer)
     {
-        const auto& tok0 { lexer.peek()[0] };
-        const auto& tok1 { lexer.peek()[1] };
-        const auto& tok2 { lexer.peek()[2] };
+        bool do_match { true };
 
-        if (tok0.has_value()) {
-            std::visit(overloaded{
-                [&](const lexer::Identifier& id) {
-                    lexer.pop();
-                    return;
-                },
-                [&](const lexer::Delimiter& delim) {
-                    switch (delim.kind) {
-                        case lexer::delimiter_kind::semicolon:
-                            break;
+        while (do_match) {
+            const OptToken& tok { lexer.peek()[0] };
+            const OptToken& tok_next { lexer.peek()[1] };
 
-                        default:
+            if (tok) {
+                std::visit(overloaded{
+                    [&](const lexer::Identifier& l) {
+                        // Consume and ignore
+                        lexer.pop();
+                    },
+                    [&](const lexer::ReservedWord& l) {
+                        switch (l.kind) {
+                            case lexer::reserved_word_kind::IN:
+                            case lexer::reserved_word_kind::IS:
+                                // Consume & ignore
+                                lexer.pop();
+                                break;
+
+                            case lexer::reserved_word_kind::ARCHITECTURE:
+                                architecture_body(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::BEGIN:
+                                throw "Unexpected reserved word at this position!";
+                                break;
+
+                            case lexer::reserved_word_kind::BLOCK:
+                                block_statement(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::BODY:
+                                throw "Unexpected reserved word at this position!";
+                                break;
+
+                            case lexer::reserved_word_kind::CASE:
+                                case_statement(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::COMPONENT:
+                                component_declaration(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::CONFIGURATION:
+                                configuration_declaration(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::END:
+                                throw "Unexpected reserved word at this position!";
+                                break;
+
+                            case lexer::reserved_word_kind::ENTITY:
+                                entity_declaration(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::FOR:
+                                // TODO: Disambiguate with more lookahead
+                                break;
+
+                            case lexer::reserved_word_kind::FUNCTION:
+                                function_decl_body(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::GENERATE:
+                                generate_statement(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::IF:
+                                if_statement(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::LOOP:
+                                loop_statement(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::PACKAGE:
+                                check_eof(tok_next);
+                                if (std::holds_alternative<lexer::ReservedWord>(tok_next.value())
+                                    && (
+                                        std::get<lexer::ReservedWord>(tok_next.value()).kind
+                                        == lexer::reserved_word_kind::BODY
+                                    )
+                                ) {
+                                    package_body(lexer);
+                                } else {
+                                    package_declaration(lexer);
+                                }
+                                break;
+
+                            case lexer::reserved_word_kind::PROCEDURE:
+                                procedure_decl_body(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::PROCESS:
+                                process_statement(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::PROTECTED:
+                                check_eof(tok_next);
+                                if (const auto* temp = std::get_if<lexer::ReservedWord>(&tok_next.value());
+                                    temp->kind == lexer::reserved_word_kind::BODY
+                                ) {
+                                    protected_type_body(lexer);
+                                } else {
+                                    protected_type_declaration(lexer);
+                                }
+                                break;
+
+                            case lexer::reserved_word_kind::RECORD:
+                                record_type_definition(lexer);
+                                break;
+
+                            case lexer::reserved_word_kind::UNITS:
+                                physical_type_definition(lexer);
+                                break;
+
+                            default:
+                                throw "Unexpected token kind!";
+                                break;
+                        }
+                    },
+                    [&](const lexer::Delimiter& l) {
+                        if (l.kind != lexer::delimiter_kind::semicolon) {
                             throw "Unexpected delimiter kind!";
-                            break;
+                        }
+                        // Consume & ignore
+                        lexer.pop();
+                    },
+                    [](const auto&) {
+                        throw "Unexpected token kind!";
                     }
-                },
-                [&](const lexer::ReservedWord& res) {
-                    switch (res.kind) {
-                        case lexer::reserved_word_kind::ARCHITECTURE:
-                            return architecture_body(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::FOR:
-                            // Check more lookahead tokens
-                            if (tok1.has_value() && tok2.has_value()) {
-                                return std::visit(overloaded{
-                                    [&](const lexer::Identifier& l, const lexer::ReservedWord& r) {
-                                        if (r.kind == lexer::reserved_word_kind::IN) {
-                                            return loop_statement(lexer);
-                                        } else {
-                                            return block_or_component_configuration(lexer);
-                                        }
-                                    },
-                                    [&](const auto& l, const auto& r) {
-                                        return block_or_component_configuration(lexer);
-                                    }
-                                }, tok1.value(), tok2.value());
-                            } else {
-                                throw "Unexpected end of input!";
-                            }
-                            break;
-
-                        case lexer::reserved_word_kind::BLOCK:
-                            return block_statement(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::CASE:
-                            return case_statement(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::COMPONENT:
-                            return component_declaration(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::CONFIGURATION:
-                            return configuration_declaration(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::ENTITY:
-                            return entity_declaration(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::GENERATE:
-                            return generate_statement(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::IF:
-                            return if_statement(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::LOOP:
-                            loop_statement(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::PACKAGE:
-                            // Check more lookahead tokens
-                            if (tok1.has_value()) {
-                                if (std::holds_alternative<lexer::ReservedWord>(tok1.value())
-                                    && std::get<lexer::ReservedWord>(tok1.value()).kind == lexer::reserved_word_kind::BODY
-                                ) {
-                                    return package_body(lexer);
-                                } else {
-                                    return package_declaration(lexer);
-                                }
-                            } else {
-                                throw "Unexpected end of input!";
-                            }
-                            break;
-
-                        case lexer::reserved_word_kind::UNITS:
-                            return physical_type_definition(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::PROCESS:
-                            return process_statement(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::PROTECTED:
-                            // Check more lookahead tokens
-                            if (tok1.has_value()) {
-                                if (std::holds_alternative<lexer::ReservedWord>(tok1.value())
-                                    && std::get<lexer::ReservedWord>(tok1.value()).kind == lexer::reserved_word_kind::BODY
-                                ) {
-                                    return protected_type_body(lexer);
-                                } else {
-                                    return protected_type_declaration(lexer);
-                                }
-                            } else {
-                                throw "Unexpected end of input!";
-                            }
-                            break;
-
-                        case lexer::reserved_word_kind::RECORD:
-                            return record_type_definition(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::FUNCTION:
-                            return function_decl_body(lexer);
-                            break;
-
-                        case lexer::reserved_word_kind::PROCEDURE:
-                            return procedure_decl_body(lexer);
-                            break;
-
-                        default:
-                            throw "Unexpected reserved word token!";
-                            break;
-                    }
-                },
-                [&](const auto& tok) {
-                    throw "Unexpected token type!";
-                }
-            }, tok0.value());
+                }, tok.value());
+            } else {
+                return;
+            }
         }
 
         return;
