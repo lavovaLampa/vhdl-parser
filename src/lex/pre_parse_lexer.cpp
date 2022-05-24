@@ -17,7 +17,6 @@ tl::optional<TokenVariant> lex_pre_parse(std::string_view src, const char* curso
 
     assert(base <= sentinel);
 
-    const char* cursor { cursor };
     const char* token_begin { cursor };
 
     const char* marker {};

@@ -4,40 +4,61 @@
 #include "lex/pre_parse_lexer.hpp"
 #include "lex/token.hpp"
 
-#include <deque>
 #include <variant>
-#include <tl/optional.hpp>
+#include <cassert>
 
 
 namespace pre_parse {
 
-std::vector<LibraryUnit> pre_parse_file(fs::path file)
-{
-}
+struct ErrorDetails {
+    std::string msg;
+    size_t offset;
+    size_t len;
+};
+
+struct DesignUnit {
+    tl::optional<std::string> name;
+    size_t offset;
+    size_t len;
+    library_unit_kind kind;
+};
 
 namespace parser {
-    static void architecture_body(lexer::Lexer& lexer);
-    static void block_or_component_configuration(lexer::Lexer& lexer);
-    static void block_statement(lexer::Lexer& lexer);
-    static void case_statement(lexer::Lexer& lexer);
-    static void component_declaration(lexer::Lexer& lexer);
-    static void configuration_declaration(lexer::Lexer& lexer);
-    static void entity_declaration(lexer::Lexer& lexer);
-    static void generate_statement(lexer::Lexer& lexer);
-    static void if_statement(lexer::Lexer& lexer);
-    static void loop_statement(lexer::Lexer& lexer);
-    static void package_body(lexer::Lexer& lexer);
-    static void package_declaration(lexer::Lexer& lexer);
-    static void physical_type_definition(lexer::Lexer& lexer);
-    static void process_statement(lexer::Lexer& lexer);
-    static void protected_type_body(lexer::Lexer& lexer);
-    static void protected_type_declaration(lexer::Lexer& lexer);
-    static void record_type_definition(lexer::Lexer& lexer);
-    static void function_decl_body(lexer::Lexer& lexer);
-    static void procedure_decl_body(lexer::Lexer& lexer);
-    static void match_any(lexer::Lexer& lexer);
-    static void temp_no_block_match(lexer::Lexer& lexer);
-    static void identifier_mopt(lexer::Lexer& lexer);
+    // Define a recursive descent parser rule
+    #define RD_RULE(rule_name) \
+        static void rule_name( \
+            lexer::LexerBase& lexer, \
+            int32_t level, \
+            size_t& offset, \
+            std::vector<DesignUnit>& units \
+        )
+
+    // Call a recursive descent parser rule
+    #define CALL_RD_RULE(rule_name) \
+        rule_name(lexer, level, offset, units)
+
+    RD_RULE(architecture_body);
+    RD_RULE(block_or_component_configuration);
+    RD_RULE(block_statement);
+    RD_RULE(case_statement);
+    RD_RULE(component_declaration);
+    RD_RULE(configuration_declaration);
+    RD_RULE(entity_declaration);
+    RD_RULE(generate_statement);
+    RD_RULE(if_statement);
+    RD_RULE(loop_statement);
+    RD_RULE(package_body);
+    RD_RULE(package_declaration);
+    RD_RULE(physical_type_definition);
+    RD_RULE(process_statement);
+    RD_RULE(protected_type_body);
+    RD_RULE(protected_type_declaration);
+    RD_RULE(record_type_definition);
+    RD_RULE(function_decl_body);
+    RD_RULE(procedure_decl_body);
+    RD_RULE(match_any);
+    RD_RULE(temp_no_block_match);
+    RD_RULE(identifier_mopt);
 
     template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
@@ -52,7 +73,19 @@ namespace parser {
         }
     }
 
-    static void match_any(lexer::Lexer& lexer)
+    static size_t get_new_offset(size_t offset, const lexer::TokenVariant& last_token)
+    {
+        return std::visit(overloaded{
+            [&](const lexer::Token& l) {
+                const size_t new_offset { l.offset + l.len };
+                assert(new_offset >= offset);
+
+                return new_offset;
+            }
+        }, last_token);
+    }
+
+    RD_RULE(match_any)
     {
         bool do_match { true };
 
@@ -75,7 +108,7 @@ namespace parser {
                                 break;
 
                             case lexer::reserved_word_kind::ARCHITECTURE:
-                                architecture_body(lexer);
+                                CALL_RD_RULE(architecture_body);
                                 break;
 
                             case lexer::reserved_word_kind::BEGIN:
@@ -83,7 +116,7 @@ namespace parser {
                                 break;
 
                             case lexer::reserved_word_kind::BLOCK:
-                                block_statement(lexer);
+                                CALL_RD_RULE(block_statement);
                                 break;
 
                             case lexer::reserved_word_kind::BODY:
@@ -91,15 +124,15 @@ namespace parser {
                                 break;
 
                             case lexer::reserved_word_kind::CASE:
-                                case_statement(lexer);
+                                CALL_RD_RULE(case_statement);
                                 break;
 
                             case lexer::reserved_word_kind::COMPONENT:
-                                component_declaration(lexer);
+                                CALL_RD_RULE(component_declaration);
                                 break;
 
                             case lexer::reserved_word_kind::CONFIGURATION:
-                                configuration_declaration(lexer);
+                                CALL_RD_RULE(configuration_declaration);
                                 break;
 
                             case lexer::reserved_word_kind::END:
@@ -107,27 +140,27 @@ namespace parser {
                                 break;
 
                             case lexer::reserved_word_kind::ENTITY:
-                                entity_declaration(lexer);
+                                CALL_RD_RULE(entity_declaration);
                                 break;
 
                             case lexer::reserved_word_kind::FOR:
-                                // TODO: Disambiguate with more lookahead
+                                // FIXME: Disambiguate with more lookahead
                                 break;
 
                             case lexer::reserved_word_kind::FUNCTION:
-                                function_decl_body(lexer);
+                                CALL_RD_RULE(function_decl_body);
                                 break;
 
                             case lexer::reserved_word_kind::GENERATE:
-                                generate_statement(lexer);
+                                CALL_RD_RULE(generate_statement);
                                 break;
 
                             case lexer::reserved_word_kind::IF:
-                                if_statement(lexer);
+                                CALL_RD_RULE(if_statement);
                                 break;
 
                             case lexer::reserved_word_kind::LOOP:
-                                loop_statement(lexer);
+                                CALL_RD_RULE(loop_statement);
                                 break;
 
                             case lexer::reserved_word_kind::PACKAGE:
@@ -138,18 +171,18 @@ namespace parser {
                                         == lexer::reserved_word_kind::BODY
                                     )
                                 ) {
-                                    package_body(lexer);
+                                    CALL_RD_RULE(package_body);
                                 } else {
-                                    package_declaration(lexer);
+                                    CALL_RD_RULE(package_declaration);
                                 }
                                 break;
 
                             case lexer::reserved_word_kind::PROCEDURE:
-                                procedure_decl_body(lexer);
+                                CALL_RD_RULE(procedure_decl_body);
                                 break;
 
                             case lexer::reserved_word_kind::PROCESS:
-                                process_statement(lexer);
+                                CALL_RD_RULE(process_statement);
                                 break;
 
                             case lexer::reserved_word_kind::PROTECTED:
@@ -157,18 +190,18 @@ namespace parser {
                                 if (const auto* temp = std::get_if<lexer::ReservedWord>(&tok_next.value());
                                     temp->kind == lexer::reserved_word_kind::BODY
                                 ) {
-                                    protected_type_body(lexer);
+                                    CALL_RD_RULE(protected_type_body);
                                 } else {
-                                    protected_type_declaration(lexer);
+                                    CALL_RD_RULE(protected_type_declaration);
                                 }
                                 break;
 
                             case lexer::reserved_word_kind::RECORD:
-                                record_type_definition(lexer);
+                                CALL_RD_RULE(record_type_definition);
                                 break;
 
                             case lexer::reserved_word_kind::UNITS:
-                                physical_type_definition(lexer);
+                                CALL_RD_RULE(physical_type_definition);
                                 break;
 
                             default:
@@ -195,25 +228,27 @@ namespace parser {
         return;
     }
 
-    static void architecture_body(lexer::Lexer& lexer)
+    RD_RULE(architecture_body)
     {
         const OptToken tok_begin_architecture { lexer.pop() };
-        const OptToken tok_begin_identifier { lexer.pop() };
+        OptToken tok_begin_identifier { lexer.pop() };
         check_eof(tok_begin_architecture, tok_begin_identifier);
 
+        std::string architecture_name { };
+
         std::visit(overloaded{
-            [](const lexer::ReservedWord& l, const lexer::Identifier& r) {
+            [&](const lexer::ReservedWord& l, lexer::Identifier& r) {
                 if (l.kind != lexer::reserved_word_kind::ARCHITECTURE) {
                     throw "Unexpected reserved word kind!";
                 }
-                // TODO: Process identifier
+                architecture_name = std::move(r.val);
             },
             [](const auto&, const auto&) {
                 throw "Unexpected token kind!";
             }
         }, tok_begin_architecture.value(), tok_begin_identifier.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_begin { lexer.pop() };
         check_eof(tok_begin);
@@ -229,7 +264,7 @@ namespace parser {
             }
         }, tok_begin.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         check_eof(tok_end);
@@ -280,10 +315,20 @@ namespace parser {
             }
         }, tok.value());
 
+        const size_t new_offset { get_new_offset(offset, tok.value()) };
+
+        units.emplace_back(
+            std::move(architecture_name),
+            offset,
+            static_cast<size_t>(new_offset - offset),
+            library_unit_kind::architecture);
+
+        offset = new_offset;
+
         return;
     }
 
-    static void block_or_component_configuration(lexer::Lexer& lexer)
+    RD_RULE(block_or_component_configuration)
     {
         const OptToken tok_begin_for { lexer.pop() };
         check_eof(tok_begin_for);
@@ -299,7 +344,7 @@ namespace parser {
             }
         }, tok_begin_for.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         const OptToken tok_for { lexer.pop() };
@@ -330,7 +375,7 @@ namespace parser {
         return;
     }
 
-    static void block_statement(lexer::Lexer& lexer)
+    RD_RULE(block_statement)
     {
         const OptToken tok_begin_block { lexer.pop() };
         check_eof(tok_begin_block);
@@ -346,7 +391,7 @@ namespace parser {
             }
         }, tok_begin_block.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_begin { lexer.pop() };
         check_eof(tok_begin);
@@ -362,7 +407,7 @@ namespace parser {
             }
         }, tok_begin.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         const OptToken tok_block { lexer.pop() };
@@ -385,7 +430,7 @@ namespace parser {
         return;
     }
 
-    static void case_statement(lexer::Lexer& lexer)
+    RD_RULE(case_statement)
     {
         const OptToken tok_begin_case { lexer.pop() };
         check_eof(tok_begin_case);
@@ -401,7 +446,7 @@ namespace parser {
             }
         }, tok_begin_case.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         const OptToken tok_case { lexer.pop() };
@@ -424,7 +469,7 @@ namespace parser {
         return;
     }
 
-    static void component_declaration(lexer::Lexer& lexer)
+    RD_RULE(component_declaration)
     {
         const OptToken tok_begin_component { lexer.pop() };
         const OptToken tok_begin_identifier { lexer.pop() };
@@ -442,7 +487,7 @@ namespace parser {
             }
         }, tok_begin_component.value(), tok_begin_identifier.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         const OptToken tok_component { lexer.pop() };
@@ -465,25 +510,27 @@ namespace parser {
         return;
     }
 
-    static void configuration_declaration(lexer::Lexer& lexer)
+    RD_RULE(configuration_declaration)
     {
         const OptToken tok_begin_configuration { lexer.pop() };
-        const OptToken tok_begin_identifier { lexer.pop() };
+        OptToken tok_begin_identifier { lexer.pop() };
         check_eof(tok_begin_configuration, tok_begin_identifier);
 
+        std::string configuration_name { };
+
         std::visit(overloaded{
-            [](const lexer::ReservedWord& l, const lexer::Identifier& r) {
+            [&](const lexer::ReservedWord& l, lexer::Identifier& r) {
                 if (l.kind != lexer::reserved_word_kind::CONFIGURATION) {
                     throw "Unexpected reserved word kind!";
                 }
-                // TODO: Process identifier!
+                configuration_name = std::move(r.val);
             },
             [](const auto&, const auto&) {
                 throw "Unexpected token kind!";
             }
         }, tok_begin_configuration.value(), tok_begin_identifier.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         check_eof(tok_end);
@@ -540,29 +587,42 @@ namespace parser {
             }
         }, tok.value());
 
+        const size_t new_offset { get_new_offset(offset, tok.value()) };
+
+        units.emplace_back(
+            configuration_name,
+            offset,
+            static_cast<size_t>(new_offset - offset),
+            library_unit_kind::configuration
+        );
+
+        offset = new_offset;
+
         return;
     }
 
-    static void entity_declaration(lexer::Lexer& lexer)
+    RD_RULE(entity_declaration)
     {
         const tl::optional<lexer::TokenVariant> tok_begin_entity { lexer.pop() };
-        const tl::optional<lexer::TokenVariant> tok_begin_identifier { lexer.pop() };
+        tl::optional<lexer::TokenVariant> tok_begin_identifier { lexer.pop() };
         check_eof(tok_begin_entity, tok_begin_identifier);
+
+        std::string entity_name { };
 
         // Handle "ENTITY identifier"
         std::visit(overloaded{
-            [](const lexer::ReservedWord& l, const lexer::Identifier& r) {
+            [&](const lexer::ReservedWord& l, lexer::Identifier& r) {
                 if (l.kind != lexer::reserved_word_kind::ENTITY) {
                     throw "Unexpected reserved word kind";
                 }
-                // TODO: Process identifier
+                entity_name = std::move(r.val);
             },
             [](const auto& l, const auto& r) {
                 throw "Unexpected token kind!";
             }
         }, tok_begin_entity.value(), tok_begin_identifier.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         // Handle "BEGIN match_any"
         if (const auto& temp_tok = lexer.peek()[0];
@@ -574,7 +634,7 @@ namespace parser {
         ) {
             // Discard the return value, as we checked it beforehand
             lexer.pop();
-            match_any(lexer);
+            CALL_RD_RULE(match_any);
         }
 
         const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
@@ -630,10 +690,20 @@ namespace parser {
             }
         }, tok.value());
 
+        const size_t new_offset { get_new_offset(offset, tok.value()) };
+
+        units.emplace_back(
+            std::move(entity_name),
+            offset,
+            static_cast<size_t>(new_offset - offset),
+            library_unit_kind::entity);
+
+        offset = new_offset;
+
         return;
     }
 
-    static void generate_statement(lexer::Lexer& lexer)
+    RD_RULE(generate_statement)
     {
         tl::optional<lexer::TokenVariant> tok_begin_generate { lexer.pop() };
         check_eof(tok_begin_generate);
@@ -650,7 +720,7 @@ namespace parser {
             }
         }, tok_begin_generate.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         // Handle "BEGIN match_any"
         if (const auto& temp_tok = lexer.peek()[0];
@@ -662,7 +732,7 @@ namespace parser {
         ) {
             // Discard the return value, as we checked it beforehand
             lexer.pop();
-            match_any(lexer);
+            CALL_RD_RULE(match_any);
         }
 
         const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
@@ -687,7 +757,7 @@ namespace parser {
         return;
     }
 
-    static void if_statement(lexer::Lexer& lexer)
+    RD_RULE(if_statement)
     {
         const tl::optional<lexer::TokenVariant> tok_begin_if { lexer.pop() };
         check_eof(tok_begin_if);
@@ -704,7 +774,7 @@ namespace parser {
             }
         }, tok_begin_if.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
         const tl::optional<lexer::TokenVariant> tok_if { lexer.pop() };
@@ -728,7 +798,7 @@ namespace parser {
         return;
     }
 
-    static void loop_statement(lexer::Lexer& lexer)
+    RD_RULE(loop_statement)
     {
         if (const auto& temp = lexer.peek()[0];
             std::holds_alternative<lexer::ReservedWord>(temp.value())
@@ -755,7 +825,7 @@ namespace parser {
                 }
             }, tok_identifier.value(), tok_in.value());
 
-            temp_no_block_match(lexer);
+            CALL_RD_RULE(temp_no_block_match);
         }
 
         const OptToken tok_begin_loop { lexer.pop() };
@@ -772,7 +842,7 @@ namespace parser {
             }
         }, tok_begin_loop.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         const OptToken tok_loop { lexer.pop() };
@@ -795,7 +865,7 @@ namespace parser {
         return;
     }
 
-    static void package_body(lexer::Lexer& lexer)
+    RD_RULE(package_body)
     {
         const tl::optional<lexer::TokenVariant> tok_package { lexer.pop() };
         const tl::optional<lexer::TokenVariant> tok_body { lexer.pop() };
@@ -808,6 +878,7 @@ namespace parser {
                     throw "Unexpected reserved word kind!";
                 }
                 if (r.kind != lexer::reserved_word_kind::BODY) {
+                    throw "Unexpected reserved word kind!";
                 }
             },
             [](const auto& l, const auto& r) {
@@ -815,7 +886,7 @@ namespace parser {
             }
         }, tok_package.value(), tok_body.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         tl::optional<lexer::TokenVariant> tok { lexer.pop() };
         check_eof(tok);
@@ -888,28 +959,40 @@ namespace parser {
             }
         }, tok.value());
 
+        const size_t new_offset { get_new_offset(offset, tok.value()) };
+
+        units.emplace_back(
+            tl::nullopt,
+            offset,
+            static_cast<size_t>(new_offset - offset),
+            library_unit_kind::package_body);
+
+        offset = new_offset;
+
         return;
     }
 
-    static void package_declaration(lexer::Lexer& lexer)
+    RD_RULE(package_declaration)
     {
         const tl::optional<lexer::TokenVariant> tok_package { lexer.pop() };
-        const tl::optional<lexer::TokenVariant> tok_identifier { lexer.pop() };
+        tl::optional<lexer::TokenVariant> tok_identifier { lexer.pop() };
         check_eof(tok_package, tok_identifier);
 
+        std::string package_name { };
+
         std::visit(overloaded{
-            [](const lexer::ReservedWord& l, const lexer::Identifier& r) {
+            [&](const lexer::ReservedWord& l, lexer::Identifier& r) {
                 if (l.kind != lexer::reserved_word_kind::PACKAGE) {
                     throw "Unexpected reserved word kind!";
                 }
-                // TODO: Handle identifier
+                package_name = std::move(r.val);
             },
             [](const auto& l, const auto& r) {
                 throw "Unexpected token kind!";
             }
         }, tok_package.value(), tok_identifier.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         tl::optional<lexer::TokenVariant> tok { lexer.pop() };
         check_eof(tok);
@@ -965,10 +1048,20 @@ namespace parser {
             }
         }, tok.value());
 
+        const size_t new_offset { get_new_offset(offset, tok.value()) };
+
+        units.emplace_back(
+            std::move(package_name),
+            offset,
+            static_cast<size_t>(new_offset - offset),
+            library_unit_kind::package);
+
+        offset = new_offset;
+
         return;
     }
 
-    static void physical_type_definition(lexer::Lexer& lexer)
+    RD_RULE(physical_type_definition)
     {
         const tl::optional<lexer::TokenVariant> tok_units { lexer.pop() };
         check_eof(tok_units);
@@ -984,7 +1077,7 @@ namespace parser {
             }
         }, tok_units.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         {
             const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
@@ -1009,7 +1102,7 @@ namespace parser {
         return;
     }
 
-    static void process_statement(lexer::Lexer& lexer)
+    RD_RULE(process_statement)
     {
         const tl::optional<lexer::TokenVariant> tok_process { lexer.pop() };
         check_eof(tok_process);
@@ -1025,7 +1118,7 @@ namespace parser {
             }
         }, tok_process.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const tl::optional<lexer::TokenVariant> tok_begin { lexer.pop() };
         check_eof(tok_begin);
@@ -1041,7 +1134,7 @@ namespace parser {
             }
         }, tok_begin.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         {
             const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
@@ -1066,7 +1159,7 @@ namespace parser {
         return;
     }
 
-    static void protected_type_body(lexer::Lexer& lexer)
+    RD_RULE(protected_type_body)
     {
         {
             const tl::optional<lexer::TokenVariant> tok_protected { lexer.pop() };
@@ -1088,7 +1181,7 @@ namespace parser {
             }, tok_protected.value(), tok_body.value());
         }
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         {
             const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
@@ -1121,7 +1214,7 @@ namespace parser {
         return;
     }
 
-    static void protected_type_declaration(lexer::Lexer& lexer)
+    RD_RULE(protected_type_declaration)
     {
         const tl::optional<lexer::TokenVariant> tok { lexer.pop() };
         check_eof(tok);
@@ -1137,7 +1230,7 @@ namespace parser {
             }
         }, tok.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
         const tl::optional<lexer::TokenVariant> tok_protected { lexer.pop() };
@@ -1161,7 +1254,7 @@ namespace parser {
     }
 
 
-    static void record_type_definition(lexer::Lexer& lexer)
+    RD_RULE(record_type_definition)
     {
         const tl::optional<lexer::TokenVariant> tok { lexer.pop() };           
         check_eof(tok);
@@ -1177,7 +1270,7 @@ namespace parser {
             }
         }, tok.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const tl::optional<lexer::TokenVariant> tok_end { lexer.pop() };
         const tl::optional<lexer::TokenVariant> tok_record { lexer.pop() };
@@ -1200,7 +1293,7 @@ namespace parser {
         return;
     }
 
-    static void function_decl_body(lexer::Lexer& lexer)
+    RD_RULE(function_decl_body)
     {
         const OptToken tok_begin_function { lexer.pop() };
         check_eof(tok_begin_function);
@@ -1216,7 +1309,7 @@ namespace parser {
             }
         }, tok_begin_function.value());
 
-        identifier_mopt(lexer);
+        CALL_RD_RULE(identifier_mopt);
 
         const OptToken tok_is_or_semicolon { lexer.pop() };
         check_eof(tok_is_or_semicolon);
@@ -1235,7 +1328,7 @@ namespace parser {
             throw "Unexpected token kind!";
         }
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_begin { lexer.pop() };
         check_eof(tok_begin);
@@ -1251,7 +1344,7 @@ namespace parser {
             }
         }, tok_begin.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         check_eof(tok_end);
@@ -1306,7 +1399,7 @@ namespace parser {
         return;
     }
 
-    static void procedure_decl_body(lexer::Lexer& lexer)
+    RD_RULE(procedure_decl_body)
     {
         const OptToken tok_begin_procedure { lexer.pop() };
         check_eof(tok_begin_procedure);
@@ -1322,7 +1415,7 @@ namespace parser {
             }
         }, tok_begin_procedure.value());
 
-        identifier_mopt(lexer);
+        CALL_RD_RULE(identifier_mopt);
 
         const OptToken tok_is_or_semicolon { lexer.pop() };
         check_eof(tok_is_or_semicolon);
@@ -1341,7 +1434,7 @@ namespace parser {
             throw "Unexpected token kind!";
         }
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_begin { lexer.pop() };
         check_eof(tok_begin);
@@ -1357,7 +1450,7 @@ namespace parser {
             }
         }, tok_begin.value());
 
-        match_any(lexer);
+        CALL_RD_RULE(match_any);
 
         const OptToken tok_end { lexer.pop() };
         check_eof(tok_end);
@@ -1412,7 +1505,7 @@ namespace parser {
         return;
     }
 
-    static void temp_no_block_match(lexer::Lexer& lexer)
+    RD_RULE(temp_no_block_match)
     {
         bool do_match { true };
 
@@ -1446,7 +1539,7 @@ namespace parser {
         return;
     }
 
-    static void identifier_mopt(lexer::Lexer& lexer)
+    RD_RULE(identifier_mopt)
     {
         bool do_match { true };
 
@@ -1467,6 +1560,25 @@ namespace parser {
         return;
     }
 
+    #undef RD_RULE
+    #undef CALL_RD_RULE
+
 } // namespace pre_parse::parser
+
+/**
+ * @brief Pre-parse given VHDL files, discovering primary and secondary units.
+ * 
+ * @param file  Path to a VHDL source file.
+ * @return std::vector<LibraryUnit> Vector of discovered library units.
+ */
+std::vector<LibraryUnit> pre_parse_file(fs::path file)
+{
+    std::vector<DesignUnit> units { };
+    size_t offset { 0 };
+    // FIXME: Open and read given file!
+    lexer::PreParseLexer lexer { "omegalul" };
+
+    parser::match_any(lexer, 0, offset, units);
+}
 
 } // namespace pre_parse

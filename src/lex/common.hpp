@@ -1,6 +1,7 @@
 #pragma once
 
 #include "error.hpp"
+#include "lex/token.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -44,16 +45,16 @@ cpp::result<BitStringLiteral, ParseError> parse_bitstring_literal(
 cpp::result<DecimalLiteral, ParseError> parse_decimal_literal(
     size_t offset,
     std::string_view view) noexcept;
-BasicIdentifier parse_basic_identifier(
+Identifier parse_basic_identifier(
     size_t offset,
     std::string_view view);
-ExtendedIdentifier parse_extended_identifier(
+Identifier parse_extended_identifier(
     size_t offset,
     std::string_view view) noexcept;
 Comment parse_comment(size_t offset, std::string_view view) noexcept;
 
 
-cpp::result<int32_t, ParseError> parse_int32_t(
+cpp::result<int32_t, ParseError>parse_int32_t(
     const std::string& str,
     int32_t base = 10) noexcept;
 
